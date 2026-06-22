@@ -1,3 +1,8 @@
+<p align="right">
+  <a href="./README.md"><img alt="English" src="https://img.shields.io/badge/Language-English-blue"></a>
+  <a href="./README.zh-CN.md"><img alt="中文" src="https://img.shields.io/badge/%E8%AF%AD%E8%A8%80-%E4%B8%AD%E6%96%87-green"></a>
+</p>
+
 # Finite-Sample Reliability of Low-FPR Membership Inference Audits: Reproducibility Package
 
 Version: v1.0.0
