@@ -1,0 +1,6 @@
+dataset,model,attack_score,metric,value,threshold,empirical_fpr,tie_fraction,n_members,n_nonmembers
+credit_default,random_forest_shadow_lira_like_neg_loss,shadow_lira_like_neg_loss,AUC,0.6253733244444444,,,,15000,15000
+credit_default,random_forest_shadow_lira_like_neg_loss,shadow_lira_like_neg_loss,TPR@1%FPR,0.008922413793103448,2.1213722229003906,0.01,0.646551724137931,15000,15000
+credit_default,random_forest_shadow_lira_like_neg_loss,shadow_lira_like_neg_loss,membership_advantage@1%FPR,-0.0010775862068965521,2.1213722229003906,0.01,0.646551724137931,15000,15000
+credit_default,random_forest_shadow_lira_like_neg_loss,shadow_lira_like_neg_loss,TPR@0.1%FPR,0.0008922413793103448,2.1213722229003906,0.001,0.06465517241379311,15000,15000
+credit_default,random_forest_shadow_lira_like_neg_loss,shadow_lira_like_neg_loss,membership_advantage@0.1%FPR,-0.00010775862068965517,2.1213722229003906,0.001,0.06465517241379311,15000,15000

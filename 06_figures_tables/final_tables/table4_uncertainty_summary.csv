@@ -1,0 +1,4 @@
+metric,n_rows,median_ci_width,p75_ci_width,max_ci_width,widest_dataset,widest_model,widest_attack_score,widest_score_role,n_bootstrap
+AUC,37,0.0074518023458179,0.0108630474444444,0.0143677492777777,credit_default,logistic_regression,neg_loss,best_auc_score;canonical_neg_loss,1000
+TPR@0.1%FPR,37,0.0009841385049167,0.0014666666666666,0.2392107279693486,credit_default,extra_trees,neg_loss,best_auc_score;canonical_neg_loss,1000
+TPR@1%FPR,37,0.0030301789443511,0.0045656501893755,0.0151160940562842,diabetes_readmission,random_forest,neg_loss,canonical_neg_loss,1000

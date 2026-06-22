@@ -1,0 +1,6 @@
+dataset,task,n_rows,n_features,n_classes,n_members,n_nonmembers,split_rule
+credit_default,Default payment prediction,30000,23,2,15000,15000,50% member / 50% non-member audit split
+covertype,Forest cover type classification,581012,54,7,290506,290506,50% member / 50% non-member audit split
+adult_income,Income threshold prediction,48842,108,2,24421,24421,50% member / 50% non-member audit split
+bank_marketing,Term-deposit subscription prediction,41188,62,2,20594,20594,50% member / 50% non-member audit split
+diabetes_readmission,Early readmission prediction,101766,565,2,50883,50883,50% member / 50% non-member audit split

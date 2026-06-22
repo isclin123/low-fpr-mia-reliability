@@ -1,0 +1,6 @@
+dataset,model,attack_score,metric,value,threshold,empirical_fpr,tie_fraction,n_members,n_nonmembers
+credit_default,random_forest_neg_loss_label_corruption_0p010,neg_loss,AUC,0.7542521666666666,,,,15000,15000
+credit_default,random_forest_neg_loss_label_corruption_0p010,neg_loss,TPR@1%FPR,0.04819298245614035,-0.0100503358989954,0.01,0.15037593984962414,15000,15000
+credit_default,random_forest_neg_loss_label_corruption_0p010,neg_loss,membership_advantage@1%FPR,0.03819298245614035,-0.0100503358989954,0.01,0.15037593984962414,15000,15000
+credit_default,random_forest_neg_loss_label_corruption_0p010,neg_loss,TPR@0.1%FPR,0.005069767441860465,0.0,0.001,0.3488372093023256,15000,15000
+credit_default,random_forest_neg_loss_label_corruption_0p010,neg_loss,membership_advantage@0.1%FPR,0.004069767441860465,0.0,0.001,0.3488372093023256,15000,15000

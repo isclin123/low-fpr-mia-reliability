@@ -1,0 +1,13 @@
+dataset,model,score_source,attack_score,metric,value,threshold,empirical_fpr,tie_fraction,n_members,n_nonmembers
+credit_default,random_forest,reference_centered,ref_centered_neg_loss,AUC,0.8656564733333334,,,,15000,15000
+credit_default,random_forest,reference_centered,ref_centered_neg_loss,TPR@0.01FPR,0.16593333333333332,0.5648167729377747,0.01,0.9999999999999939,15000,15000
+credit_default,random_forest,reference_centered,ref_centered_neg_loss,TPR@0.001FPR,0.0014666666666666667,3.454627275466919,0.001,1.0,15000,15000
+credit_default,random_forest,reference_centered,ref_logit_margin,AUC,0.9254414088888889,,,,15000,15000
+credit_default,random_forest,reference_centered,ref_logit_margin,TPR@0.01FPR,0.3307333333333333,1.533873438835144,0.01,0.9999999999999939,15000,15000
+credit_default,random_forest,reference_centered,ref_logit_margin,TPR@0.001FPR,0.009133333333333334,19.61928367614746,0.001,1.0,15000,15000
+credit_default,random_forest,reference_centered,ref_z_logit_margin,AUC,0.9249534133333334,,,,15000,15000
+credit_default,random_forest,reference_centered,ref_z_logit_margin,TPR@0.01FPR,0.3738666666666667,4.443416118621826,0.01,0.9999999999999939,15000,15000
+credit_default,random_forest,reference_centered,ref_z_logit_margin,TPR@0.001FPR,0.016,18.095657348632812,0.001,1.0,15000,15000
+credit_default,random_forest,simple_score_baseline,neg_loss,AUC,0.7584220711111112,,,,15000,15000
+credit_default,random_forest,simple_score_baseline,neg_loss,TPR@0.01FPR,0.048731782945736435,-0.0100503358989954,0.01,0.16279069767441862,15000,15000
+credit_default,random_forest,simple_score_baseline,neg_loss,TPR@0.001FPR,0.005069767441860465,0.0,0.001,0.3488372093023256,15000,15000

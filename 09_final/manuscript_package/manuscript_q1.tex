@@ -1,0 +1,1417 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  10pt,
+  twocolumn]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Finite-Sample Reliability of Low-FPR Membership Inference Audits},
+  pdfauthor={Sicheng Yi},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[letterpaper,left=0.72in,right=0.72in,top=0.72in,bottom=0.82in]{geometry}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{float}
+\hypersetup{hypertexnames=false}
+\setlength{\columnsep}{0.28in}
+\setlength{\parindent}{1em}
+\setlength{\parskip}{0pt}
+\linespread{0.96}
+\setlength{\abovedisplayskip}{6pt plus 2pt minus 2pt}
+\setlength{\belowdisplayskip}{6pt plus 2pt minus 2pt}
+\setlength{\abovedisplayshortskip}{4pt plus 2pt minus 2pt}
+\setlength{\belowdisplayshortskip}{4pt plus 2pt minus 2pt}
+\setlength{\intextsep}{9pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{11pt plus 2pt minus 2pt}
+\setlength{\floatsep}{9pt plus 2pt minus 2pt}
+\setlength{\abovecaptionskip}{4pt}
+\setlength{\belowcaptionskip}{5pt}
+\raggedbottom
+\tolerance=1800
+
+\emergencystretch=1em \hyphenpenalty=200 \exhyphenpenalty=50 \clubpenalty=10000 \widowpenalty=10000 \def\UrlBreaks{\do\/\do-\do\_\do\.\do\?\do\&\do\=} \newcolumntype{Y}{>{\raggedright\arraybackslash}X} \newcolumntype{R}{>{\raggedleft\arraybackslash}p{0.12\textwidth}} \newcolumntype{L}{>{\raggedright\arraybackslash}p{0.14\textwidth}} \newcolumntype{M}{>{\raggedright\arraybackslash}p{0.18\textwidth}} \newcolumntype{N}{>{\raggedright\arraybackslash}p{0.33\textwidth}} \pagestyle{myheadings}
+
+\markboth{Yi}{Yi}
+\makeatletter
+\renewcommand{\@maketitle}{%
+  \newpage
+  \null
+  \vskip 1.0em%
+  \begin{center}%
+  {\LARGE \bfseries \@title \par}%
+  \vskip 1.0em%
+  {\normalsize \@author \par}%
+  \end{center}%
+  \vskip 0.7em%
+}
+\makeatother
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{Finite-Sample Reliability of Low-FPR Membership Inference Audits}
+\author{Sicheng Yi}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+
+Membership inference attacks (MIAs) are widely used to evaluate whether trained models expose information about their training records, but low false-positive-rate (FPR) results are often reported as if they were stable attack properties. We treat low-FPR MIA evaluation instead as a finite-sample post-score reporting problem. Given member and non-member score arrays, our workflow reports global discrimination, tie-aware low-FPR operating metrics, bootstrap intervals that reselect thresholds, conditional fixed-threshold Wilson checks, audit-size sensitivity, and expected false-positive-budget warnings. Across four simple score-based MIAs, five public tabular datasets, and five scikit-learn-compatible model families, the results show model-family dependence and a separation between AUC and low-FPR TPR interpretation. At TPR@0.1\%FPR, the non-member audit denominator is part of the result: 5,000 non-members provide only five expected false positives, and repeated subsampling shows that tail-metric uncertainty narrows as the audit budget grows. Bounded appendix checks show that reference-centered and shadow-model score arrays can enter the same reporting layer, while tie-rule, split/seed, and audit-label perturbation checks show that low-FPR readings can change without removing the need for interval and tail-budget reporting. The contribution is a post-score estimand and reporting protocol, not a new attack, a LiRA/RMIA benchmark, a systematic literature survey, or a production privacy guarantee.
+\end{abstract}
+
+\textbf{Keywords:} membership inference attacks, low-FPR evaluation, audit reporting, bootstrap intervals, finite-sample reliability
+
+\hypertarget{introduction}{%
+\section{1. Introduction}\label{introduction}}
+
+Machine-learning models can expose information about the records used to train them. Membership inference attacks (MIAs) test this risk by asking whether a candidate record was part of a target model's training data \cite{ref-1,ref-2}. They have become a standard tool for studying privacy leakage in trained models. For an audit to be useful, however, it must be reliable where false positives matter most. A reported attack that looks strong on average may still be difficult to interpret if many non-member records are incorrectly flagged as members.
+
+Modern membership-inference research has made low false-positive rate (FPR) evaluation central to attack design. LiRA, difficulty calibration, and RMIA-style approaches improve how membership evidence is produced, especially in the low-FPR regime where practical false alarms matter \cite{ref-3,ref-4,ref-5}. False-discovery-rate-control MIAs address a related decision objective by controlling the expected fraction of false discoveries among records declared as members \cite{ref-19}. Practical reassessments also show that priors, threshold calibration, false alarms, and deployment assumptions can change the meaning of a reported attack result \cite{ref-6,ref-7,ref-8}. Recent reliability-focused work goes further by showing that efficient LiRA-style vulnerability evaluation can be distorted by score concatenation, heterogeneous per-sample FPRs, and finite-population bias \cite{ref-12}. These advances sharpen score generation, calibration, aggregation, and decision rules. They still leave a complementary post-score reporting question for score arrays produced under a stated audit protocol: once member and non-member scores exist, what exactly is the low-FPR estimand, and what finite-sample evidence supports it?
+
+This reporting question is easy to hide because low-FPR metrics look like ordinary point estimates. A threshold at 1\% FPR or 0.1\% FPR is selected from the non-member score distribution, and the corresponding true-positive rate is estimated from member scores. At 0.1\% FPR, however, 5000 non-member audit records correspond to only 5 expected false positives, and 250 non-members correspond to 0.25 expected false positives. Without this denominator, a table entry such as TPR@0.1\%FPR can look like a stable attack property even when the empirical false-positive tail is supported by only a few expected records. The reported TPR can therefore depend on finite-sample variation, threshold ties, and the available non-member pool. Standard interval methods for proportions and rare events are relevant \cite{ref-9,ref-10}, but they are not automatically packaged into MIA reporting practice.
+
+As a bounded positioning check rather than a systematic review, we coded a convenience sample of core MIA, low-FPR, realism, efficient-reliability, adjacent audit, and statistical-context papers for six reporting fields. The check is used only to motivate the protocol: in the sampled core/direct-reliability MIA papers, low-FPR metrics and threshold concerns were visible, but no row reported all six fields as a reusable arbitrary-score-array reporting package. \protect\hyperlink{appendix-a-reporting-practice-mini-audit}{Appendix A} gives the coding boundary and counts. The paper's main claim does not rest on prevalence in the literature; it rests on the estimand and empirical evidence that low-FPR MIA reports need an explicit finite-sample reliability layer after scores have been produced.
+
+Here we define finite-sample low-FPR reliability as a post-score reporting problem for score-based MIA audits. Instead of treating TPR@1\%FPR or TPR@0.1\%FPR as a self-contained attack score, the protocol defines the reported estimand and asks what audit evidence supports it. Given member scores \(S_M\), non-member scores \(S_N\), a larger-is-member convention, and a target FPR \(\alpha\), the workflow reports AUC, tie-aware TPR at \(\alpha\), empirical FPR, threshold and tie fraction, stratified-bootstrap intervals that reselect the threshold, conditional fixed-threshold Wilson intervals, repeated balanced audit-size sensitivity, and the expected false-positive budget \(n_N\alpha\). We then apply the same reporting layer to four simple score-based MIAs across five public tabular datasets and five scikit-learn-compatible target-model families.
+
+The paper-level contribution is this post-score estimand and reporting protocol, not a new score-generation attack. The workflow makes the audit sample size, low-FPR threshold behavior, interval estimand, and tail-resolution budget visible for each supplied score array. In the expanded tabular grid, this framing shows that simple-score membership signal is model-family dependent, that AUC and low-FPR TPR answer different audit questions, and that tail claims require explicit non-member sample-size context. Five bounded appendix checks test the workflow beyond the main simple-score grid: reference-centered random-forest scores can be audited by the same reporting layer (\protect\hyperlink{appendix-f-reference-centered-score-check}{Appendix F}); a small label-corruption check shows how audit-label uncertainty changes point estimates (\protect\hyperlink{appendix-g-label-uncertainty-check}{Appendix G}); a bounded shadow-model score-array check exercises a likelihood-ratio-style input without claiming a LiRA/RMIA benchmark (\protect\hyperlink{appendix-h-bounded-shadow-model-score-check}{Appendix H}); and tie-rule plus split/seed sensitivity checks expose low-FPR reporting dependence on threshold ties and repeated target construction (\protect\hyperlink{appendix-i-tie-rule-sensitivity}{Appendix I}; \protect\hyperlink{appendix-j-splitseed-sensitivity}{Appendix J}).
+
+This paper makes three bounded contributions. First, it identifies finite-sample low-FPR reliability as a distinct post-score reporting problem in which member/non-member sample sizes and false-positive budgets are part of the result. Second, it provides a reusable score-array audit protocol for supplied member/non-member score arrays with a larger-is-member convention, threshold/tie rule, interval estimands, and stated audit design. Third, it reports an expanded tabular study and bounded appendix checks showing how model-family behavior, train/non-member gaps, saturated tree scores, reference-centered and shadow-model score inputs, tie-rule choices, split/seed variation, audit-label uncertainty, uncertainty intervals, and tail-resolution warnings change the interpretation of MIA results.
+
+\hypertarget{related-work}{%
+\section{2. Related Work}\label{related-work}}
+
+This section positions the paper against membership inference foundations, low-FPR and reference-model attack design, practical realism and calibration, efficient-evaluation reliability, operational audit toolkits, privacy-auditing sample complexity, and statistical uncertainty for rare-event proportions. The distinction is that this paper does not propose a new attack. It studies the reliability of reported MIA metrics once member and non-member score arrays are available.
+
+\hypertarget{membership-inference-and-simple-baselines}{%
+\subsection{2.1 Membership Inference and Simple Baselines}\label{membership-inference-and-simple-baselines}}
+
+Membership inference attacks were introduced as a way to infer whether a record was used to train a target model \cite{ref-1}. Early work established the black-box threat model, the use of target-model outputs as membership evidence, and the relationship between membership leakage and model behavior. Loss-threshold attacks then connected membership risk to overfitting by testing whether a record's loss is unusually low under the target model \cite{ref-2}.
+
+These foundations motivate the simple scores used in the present study. Negative loss, confidence, negative entropy, and negative modified prediction entropy are not new attacks in this manuscript. They are controlled score producers that make the reporting problem visible: given member and non-member score arrays, how should AUC, low-FPR TPR, uncertainty, and audit-sample-size sensitivity be reported?
+
+\hypertarget{low-fpr-and-reference-model-attack-design}{%
+\subsection{2.2 Low-FPR and Reference-model Attack Design}\label{low-fpr-and-reference-model-attack-design}}
+
+Modern MIA research has emphasized low-FPR behavior because practical audits can be dominated by false positives. LiRA made low-FPR evaluation central by using likelihood-ratio evidence from shadow or reference models \cite{ref-3}. Difficulty calibration adjusts membership evidence by sample difficulty and can reduce false-positive behavior without simply changing the evaluation metric \cite{ref-4}. RMIA-style attacks further show that reference-population modeling can produce high-power membership tests at low computational cost \cite{ref-5}. Recent FDR-control work changes the decision target from a fixed ROC operating point to controlling false discoveries among positive membership calls \cite{ref-19}. Few-shot and log-scaled evaluation work similarly broadens the attack/evaluation design space by proposing FeS-MIA and Log-MIA for lower-resource privacy-leakage assessment and more interpretable low-FPR reporting \cite{ref-23}.
+
+These approaches improve how membership scores are produced or how membership decisions are declared. The present paper addresses the next layer: how to evaluate and report the reliability of metrics once scores exist. This is why the score-array audit tool is conditional on declared score construction and aggregation rather than tied to one attack. It can audit scores from simple loss-style attacks or reference-model attacks, provided the audit protocol exports comparable member/non-member score arrays. The empirical claims in this manuscript remain limited to the four simple score-based MIAs evaluated here.
+
+\hypertarget{practical-realism-false-positives-and-calibration}{%
+\subsection{2.3 Practical Realism, False Positives, and Calibration}\label{practical-realism-false-positives-and-calibration}}
+
+Several studies caution that MIA conclusions can change under realistic false-positive rates, priors, and deployment assumptions. Rezaei and Liu show that practical interpretation is difficult when false alarm rates are high \cite{ref-6}. SoK-style work similarly argues that membership inference can be harder under realistic conditions than benchmark summaries suggest \cite{ref-7}. Recent LiRA reassessment work further highlights the importance of threshold calibration, skewed priors, anti-overfitting training, transfer learning, and attack reproducibility \cite{ref-8}. These works motivate the present reporting question because low-FPR point estimates can be technically correct while still being incomplete as audit evidence.
+
+A closely adjacent reliability line studies MIA evaluation itself. Jälkö et al.~show that common efficient low-FPR pipelines can be unreliable when scores are concatenated across samples without per-sample FPR calibration, and that efficient LiRA implementations can suffer finite-population bias \cite{ref-12}. Other recent work treats MIAs as privacy tools and studies reliability, disparity, stability, and ensembles across attack methods and instantiations \cite{ref-15}. These papers narrow the present novelty claim: this manuscript does not argue that MIA reliability has been ignored. It studies a different post-score object: once a member/non-member score array is supplied, what metric estimand, interval procedure, threshold/tie convention, audit-size sensitivity, and false-positive-budget warning should accompany the reported low-FPR result?
+
+Adjacent data-use and copyright-auditing work repurposes MIAs or MI-style tests as evidence that a model used a data owner's records. General data-use auditing combines black-box MI scores with sequential hypothesis testing; MembershipTracker-style auditing combines data marking with MI verification; and copyright-evidentiary work cautions that MIA signals can be brittle under adversarial semantic-preserving transformations \cite{ref-20,ref-21,ref-22,ref-35}. These works sharpen the distinction between an attack score, an audit decision rule, and an evidentiary claim. The present paper is narrower: it reports finite-sample uncertainty and tail-budget context for supplied score arrays, not legal sufficiency or unauthorized-use proof.
+
+Operational privacy-audit tools also make MIA testing easier to run. ML Privacy Meter-style tools and full-pipeline MIA evaluation frameworks provide attack implementations, ROC-style summaries, or broader auditing toolkits \cite{ref-17,ref-18}. These tools motivate artifact-oriented auditing, but the workflow here targets a narrower reporting layer: reusable statistical reporting for arbitrary supplied score arrays, with explicit low-FPR uncertainty, tie handling, audit-size sensitivity, and tail-resolution fields.
+
+Calibration is related but distinct. Probability calibration work shows that modern neural-network confidence scores can be poorly calibrated and that post-processing methods such as temperature scaling can improve predictive probability calibration \cite{ref-11}. Difficulty calibration adapts this idea to membership evidence by adjusting scores for sample difficulty \cite{ref-4}. These methods can change the score arrays entering an audit, but they do not remove the need to report finite-sample uncertainty around low-FPR metrics after scores are produced.
+
+Privacy-auditing sample-complexity work provides a complementary theoretical warning. Haghifam, Smith, and Ullman study how many reference samples may be required for membership inference and privacy auditing, showing that sample access can itself be a limiting resource \cite{ref-16}. The present paper does not analyze optimal attack sample complexity. It focuses on the finite member/non-member audit sample actually used to report a fixed low-FPR metric for a supplied score array.
+
+\hypertarget{statistical-intervals-and-rare-event-reporting}{%
+\subsection{2.4 Statistical Intervals and Rare-event Reporting}\label{statistical-intervals-and-rare-event-reporting}}
+
+Low-FPR MIA metrics are tail estimates, so statistical interval literature is directly relevant. Wilson-style intervals for binomial proportions address finite-sample uncertainty after a fixed threshold has produced an effective count of member successes \cite{ref-9}. Rare-event interval work provides additional guidance for settings where the expected number of events is very small \cite{ref-10}.
+
+The present audit workflow adapts these ideas to score-based MIA reporting. Stratified bootstrap intervals resample member and non-member score arrays and include threshold-selection variation. Fixed-threshold Wilson intervals provide a conditional check after threshold and tie rule selection. Repeated balanced audit subsampling shows how metrics change when only smaller member/non-member audit samples are available. Tail-resolution warnings translate the rare-event problem into a simple audit diagnostic: if the non-member sample multiplied by the target FPR is below 5, the low-FPR estimate needs explicit caution.
+
+\hypertarget{position-of-this-work}{%
+\subsection{2.5 Position of This Work}\label{position-of-this-work}}
+
+The closest prior work improves attacks, studies practical MIA realism, controls false discoveries, calibrates efficient evaluation, examines MIAs as privacy or data-use audit tools, builds audit toolkits, or provides statistical interval tools. This paper combines those concerns at the post-score reporting layer. It provides a reusable score-array audit protocol and applies it to an expanded tabular grid, showing that simple-score MIA signal is model-family dependent and that low-FPR metrics require explicit uncertainty, threshold/tie, and sample-size context.
+
+The bounded reporting-practice mini audit reinforces this position without claiming exhaustive coverage. Across 10 core MIA, low-FPR, and realism papers plus one direct MIA-evaluation reliability paper, the sampled works commonly discuss thresholded metrics, false-positive behavior, calibration, or low-FPR reliability. They do not report a reusable package containing low-FPR intervals, audit-size sensitivity, tie or boundary handling, and false-positive-budget warnings for supplied member/non-member score arrays. Adjacent unlearning-audit and statistical interval papers show that pieces of this logic exist, but they do not replace a score-array reporting protocol for MIA audits. The protocol packages operating points, threshold ties, bootstrap intervals, conditional Wilson checks, audit-sample sensitivity, and false-positive-budget warnings into one reproducible layer.
+
+The contribution is therefore deliberately bounded. It does not replace LiRA, RMIA, or difficulty-calibrated attacks. It does not claim coverage of language models, generative models, or production audits. It provides a reporting protocol that can be reused once member and non-member score arrays are available under a stated audit design.
+
+\hypertarget{methods}{%
+\section{3. Methods}\label{methods}}
+
+This study evaluates membership inference attack (MIA) reporting as a finite-sample audit problem. The empirical workflow fixes target-model training, converts target-model outputs into member and non-member attack score arrays, and then applies the same metric and uncertainty procedures to every dataset/model/score combination. This design separates two questions that are often conflated: how much membership signal a score contains, and how reliably that signal can be estimated at low false-positive rate (FPR) operating points.
+
+The Methods section is organized around the score-array audit workflow. Sections 3.1 to 3.4 define the audit setting, datasets, target models, and attack scores. Sections 3.5 to 3.8 define the metrics, interval estimators, and audit-sample-size analysis. Sections 3.9 to 3.12 record the reusable audit interface, completed analyses, supplemental-check designs, reproducibility checks, and scope boundaries.
+
+\hypertarget{study-design-and-audit-setting}{%
+\subsection{3.1 Study Design and Audit Setting}\label{study-design-and-audit-setting}}
+
+The experiment uses a known member/non-member split to evaluate score-based MIAs under controlled conditions. For each dataset, records are split into a target-training pool and a held-out pool. The target-training records are treated as members, and the held-out records are treated as non-members:
+
+\[
+\begin{gathered}
+D = D_{\mathrm{member}} \cup D_{\mathrm{nonmember}},\\
+D_{\mathrm{member}} \cap D_{\mathrm{nonmember}} = \varnothing .
+\end{gathered}
+\]
+
+The target model is trained only on \(D_{\mathrm{member}}\). After training, the model is evaluated on both \(D_{\mathrm{member}}\) and \(D_{\mathrm{nonmember}}\) to obtain predicted class probabilities. These probabilities and the true labels are converted into attack scores, with the convention that larger values are more member-like.
+
+The audit task is then defined only in terms of score arrays. Let \(S_M = \{s_i^M\}_{i=1}^{n_M}\) be member scores and \(S_N = \{s_j^N\}_{j=1}^{n_N}\) be non-member scores. The audit workflow consumes \((S_M, S_N)\) for each attack score and returns point metrics, uncertainty intervals, audit-sample-size sensitivity summaries, and tail-resolution warnings. This abstraction is deliberate: the paper studies reliable reporting after attack scores are available, rather than proposing a new MIA or requiring a specific target-training pipeline.
+
+\hypertarget{datasets-and-membernon-member-splits}{%
+\subsection{3.2 Datasets and Member/Non-member Splits}\label{datasets-and-membernon-member-splits}}
+
+The expanded tabular study uses five public tabular datasets. Dataset sources are cited through their source repositories: Default of Credit Card Clients, Adult/Census Income, Forest Covertype, Bank Marketing, and Diabetes 130-US Hospitals \cite{ref-26,ref-27,ref-28,ref-29,ref-30}. Each dataset is cleaned into a feature matrix \(X\), a label vector \(y\), and a single stratified 50/50 member/non-member split. Cleaned feature arrays are stored in single-precision format, labels are stored as integer class labels, and split indices are retained with the cleaned dataset records.
+
+Dataset summary:
+
+\begin{itemize}
+\tightlist
+\item
+  Credit Default: Default of Credit Card Clients; binary classification; 30,000 rows, 23 features, 2 classes; 15,000 members and 15,000 non-members. Preprocessing removed the ID field; the target is default payment next month.
+\item
+  Covertype: Forest Covertype; multiclass classification; 581,012 rows, 54 features, 7 classes; 290,506 members and 290,506 non-members. Data were loaded through the scikit-learn Covertype loader.
+\item
+  Adult Income: Adult/Census Income; binary classification; 48,842 rows, 108 features, 2 classes; 24,421 members and 24,421 non-members. Original train/test files were combined, and categorical unknown markers were retained as Unknown.
+\item
+  Bank Marketing: Bank Marketing additional-full; binary classification; 41,188 rows, 62 features, 2 classes; 20,594 members and 20,594 non-members. The post-call duration feature was excluded.
+\item
+  Diabetes Readmission: Diabetes 130-US Hospitals; binary classification; 101,766 rows, 565 features, 2 classes; 50,883 members and 50,883 non-members. The target is readmission within 30 days versus all other outcomes; encounter and patient identifiers were excluded, and rare diagnosis codes were grouped into Other.
+\end{itemize}
+
+Stratification is performed by the target label using a fixed random seed. This keeps class proportions nearly identical across member and non-member pools. The split is intentionally simple because the goal is to study finite-sample audit reporting when membership labels are known for evaluation. It does not model label uncertainty, incomplete audit records, or real production data-access constraints.
+
+All empirical comparisons in the expanded grid are conditional on this single stratified split and the fixed random seed used for dataset splitting and model training. The purpose of the grid is to evaluate the reporting behavior of supplied member/non-member score arrays under a reproducible audit design, not to estimate split-to-split or seed-to-seed variability of target training. The repeated audit-size analysis below resamples audit records from the fixed score arrays; it should therefore be interpreted as audit-sample-size sensitivity, not as a retraining or repeated-split study.
+
+\hypertarget{target-models}{%
+\subsection{3.3 Target Models}\label{target-models}}
+
+The expanded grid evaluates five scikit-learn-compatible target-model families implemented with scikit-learn \cite{ref-25}. All models are trained on the full member pool for each dataset, with no training-sample cap in the expanded first-pass analysis. Each trained target model is saved with training indices, model metadata, train accuracy, non-member accuracy, train log loss, and non-member log loss.
+
+Target-model families:
+
+\begin{itemize}
+\tightlist
+\item
+  Logistic regression: a standardized pipeline with logistic regression (maximum 1000 iterations and a fixed random seed); used as a linear baseline with limited expected train/non-member gap.
+\item
+  Random Forest: a 200-tree random forest with a fixed random seed and parallel jobs enabled; used as a bagged tree ensemble and overfitting-prone baseline \cite{ref-31}.
+\item
+  HistGradientBoosting: histogram gradient boosting with 200 iterations and a fixed random seed; used to test whether predictive accuracy alone implies stronger simple-score leakage \cite{ref-33}.
+\item
+  ExtraTrees: a 200-tree ExtraTrees classifier with a fixed random seed and parallel jobs enabled; used to test whether random-forest-like behavior generalizes across randomized tree ensembles \cite{ref-32}.
+\item
+  Small MLP: a standardized pipeline with a one-hidden-layer MLP (64 hidden units, alpha 0.0001, learning rate 0.001, maximum 200 iterations, early stopping, and a fixed random seed); used as a small neural tabular baseline without turning the study into a deep-learning benchmark.
+\end{itemize}
+
+The model set is designed to create a range of target behaviors rather than to optimize predictive performance. We therefore interpret model-family patterns descriptively and with interval support, not as formal pairwise-superiority claims.
+
+\hypertarget{attack-scores}{%
+\subsection{3.4 Attack Scores}\label{attack-scores}}
+
+For each trained target model, predicted class probabilities are computed for all member and non-member records. Let \(p_k(x)\) denote the predicted probability assigned to class \(k\) for record \(x\), let \(y\) be the true class label, and let \(K\) be the number of classes. The study evaluates four simple attack scores.
+
+Negative loss is the negative per-sample cross-entropy loss:
+
+\[
+\begin{aligned}
+\ell(x,y) &= -\log p_y(x),\\
+s_{\mathrm{loss}}(x,y) &= -\ell(x,y) = \log p_y(x).
+\end{aligned}
+\]
+
+Confidence is the maximum predicted class probability:
+
+\[
+s_{\mathrm{conf}}(x) = \max_{k \in \{1,\ldots,K\}} p_k(x).
+\]
+
+Negative entropy is the negative predictive entropy:
+
+\[
+\begin{aligned}
+H(x)
+&= -\sum_{k=1}^{K} p_k(x)\log p_k(x),\\
+s_{\mathrm{ent}}(x)
+&= -H(x).
+\end{aligned}
+\]
+
+Negative modified prediction entropy is the negative label-aware modified prediction entropy used in prior metric-based MIA work \cite{ref-24}:
+
+\[
+\begin{aligned}
+\mathrm{ME}(x,y)
+&= -(1-p_y(x))\log p_y(x)\\
+&\quad - \sum_{k \ne y} p_k(x)\log(1-p_k(x)),\\
+s_{\mathrm{mod}}(x,y)
+&= -\mathrm{ME}(x,y).
+\end{aligned}
+\]
+
+All probabilities are clipped to \([10^{-12}, 1-10^{-12}]\) before logarithms are evaluated. Attack score arrays are represented as paired member and non-member score vectors with a consistent score name for each metric. The same larger-is-member convention is used for every score, which allows the metric code and audit workflow to treat all score arrays identically.
+
+\hypertarget{low-fpr-metrics}{%
+\subsection{3.5 Low-FPR Metrics}\label{low-fpr-metrics}}
+
+For each dataset, target model, and attack score, the full-grid analysis computes area under the receiver operating characteristic curve (AUC). At the low-FPR operating points, it reports true-positive rate at 1\% false-positive rate (TPR@1\%FPR), true-positive rate at 0.1\% false-positive rate (TPR@0.1\%FPR), and membership advantage. AUC treats members as the positive class and non-members as the negative class:
+
+\[
+\mathrm{AUC} =
+\Pr(s_M > s_N) + \frac{1}{2}\Pr(s_M = s_N),
+\]
+
+where \(s_M \sim S_M\) and \(s_N \sim S_N\).
+
+Low-FPR metrics are computed at target FPR levels
+
+\[
+\alpha \in \{0.01, 0.001\}.
+\]
+
+For a given \(\alpha\), the threshold \(\tau_{\alpha}\) is selected from the non-member score tail. Because tree-based classifiers can produce tied score values, the implementation uses a tie-aware randomized operating point. Define
+
+\[
+F_N^> = \Pr_{s \sim S_N}(s > \tau_{\alpha}), \qquad
+F_N^= = \Pr_{s \sim S_N}(s = \tau_{\alpha}).
+\]
+
+The tie fraction is
+
+\[
+\gamma =
+\begin{cases}
+\mathrm{clip}\left(\dfrac{\alpha - F_N^>}{F_N^=}, 0, 1\right), & F_N^= > 0,\\
+0, & F_N^= = 0.
+\end{cases}
+\]
+
+The resulting empirical operating-point FPR, TPR, and membership advantage are
+
+\[
+\begin{aligned}
+\hat{\mathrm{FPR}}_{\alpha}
+= F_N^> + \gamma F_N^=,\\
+\hat{\mathrm{TPR}}_{\alpha}
+= \Pr_{s \sim S_M}(s > \tau_{\alpha})
++ \gamma \Pr_{s \sim S_M}(s = \tau_{\alpha}),\\
+\hat{\mathrm{Adv}}_{\alpha}
+= \hat{\mathrm{TPR}}_{\alpha}
+- \hat{\mathrm{FPR}}_{\alpha}.
+\end{aligned}
+\]
+
+This procedure keeps the reported operating point aligned with the requested FPR when many non-member scores share the threshold value. The low-FPR TPR reported by this rule is an expected operating-point quantity under randomized tie-breaking at the selected threshold. It is not the deterministic TPR obtained by counting all scores at the threshold as members, which can overshoot the target FPR in discrete or saturated score distributions. The workflow reports threshold, empirical FPR, and tie fraction so that readers can identify settings where the requested FPR is achieved mainly through fractional allocation of tied threshold scores.
+
+\hypertarget{stratified-bootstrap-intervals}{%
+\subsection{3.6 Stratified Bootstrap Intervals}\label{stratified-bootstrap-intervals}}
+
+The main uncertainty estimator is a stratified nonparametric bootstrap over member and non-member score arrays. For each bootstrap replicate \(b\), member scores are resampled with replacement from \(S_M\), non-member scores are resampled with replacement from \(S_N\), and the metric is recomputed:
+
+\[
+\hat{\theta}^{(b)}
+= f(S_M^{(b)}, S_N^{(b)}).
+\]
+
+The 95\% interval is the percentile interval \cite{ref-34}
+
+\[
+\mathrm{CI}_{0.95} =
+\left[
+\begin{gathered}
+Q_{0.025}\left(\{\hat{\theta}^{(b)}\}_{b=1}^{B}\right),\\
+Q_{0.975}\left(\{\hat{\theta}^{(b)}\}_{b=1}^{B}\right)
+\end{gathered}
+\right].
+\]
+
+The bootstrap and Wilson intervals answer different audit questions. The stratified bootstrap resamples member and non-member score arrays, reselects the low-FPR threshold in each replicate, and therefore includes finite-sample variation from both threshold selection and member TPR estimation. These percentile intervals are nominal descriptive intervals conditional on the observed score-array-generating design and assume exchangeability within the observed member and non-member audit pools. Correlated, duplicated, or clustered records can weaken the coverage interpretation, and the study does not run a repeated-data-generating-process simulation to verify empirical coverage. The fixed-threshold Wilson interval defined below is conditional on the threshold and tie fraction already selected from the observed non-member scores. We therefore use the bootstrap intervals as the main uncertainty evidence for reported low-FPR metrics and use Wilson intervals as a conditional diagnostic.
+
+The two bootstrap regimes also have different roles. The expanded first-pass analysis used \(B=50\) bootstrap repeats for the full 500-row grid. This first-pass grid supports broad pattern finding and appendix-style exploration, but it is not presented as final confidence-interval evidence for every score/metric row.
+
+The selected final bootstrap analysis used \(B=1000\) repeats for main-table candidate rows. For each dataset/model pair, it selected the score with the best first-pass AUC and also selected the canonical negative-loss score. For each selected score, it recomputed AUC, TPR@1\%FPR, and TPR@0.1\%FPR intervals. This produced 37 selected score rows and 111 final confidence-interval rows. Main-text interval claims use these selected final rows; full-grid appendix intervals remain labelled as first-pass 50-bootstrap intervals unless separately recomputed. \protect\hyperlink{appendix-b-supplementary-output-index}{Appendix B} indexes the machine-readable outputs, and \protect\hyperlink{appendix-c-final-bootstrap-boundary}{Appendix C} states the final-bootstrap boundary.
+
+This selection rule supports two main-text uses. The best-AUC row shows the strongest observed simple-score signal for each dataset/model pair, while the negative-loss row gives a canonical label-aware score for low-FPR operating-point reporting. The final-bootstrap step is not a formal score-selection test and does not imply that unselected score/metric rows have final-paper-grade intervals.
+
+The final bootstrap analysis uses an exact pre-sorted weighted AUC bootstrap for AUC. Fixed scores are sorted once into tie groups; each bootstrap replicate is then computed from member and non-member resampling weights rather than by re-sorting all scores. This optimization gives the same AUC point estimate as the standard pairwise-rank computation while making 1000-bootstrap AUC intervals feasible for Covertype-scale arrays.
+
+\hypertarget{fixed-threshold-wilson-intervals}{%
+\subsection{3.7 Fixed-threshold Wilson Intervals}\label{fixed-threshold-wilson-intervals}}
+
+The audit workflow also computes fixed-threshold Wilson intervals for low-FPR TPR. These intervals answer a narrower conditional question: after the threshold \(\tau_{\alpha}\) and tie fraction \(\gamma\) have been selected from the non-member scores, how much binomial uncertainty remains in the member TPR estimate?
+
+For a selected operating point, the effective member success count is
+
+\[
+x_M =
+\sum_{s \in S_M} \mathbb{1}(s > \tau_{\alpha})
++ \gamma \sum_{s \in S_M} \mathbb{1}(s = \tau_{\alpha}),
+\]
+
+and the point estimate is \(\hat{p}=x_M/n_M\). The Wilson interval is then applied to \(\hat{p}\) at the selected confidence level. Because randomized threshold ties can make \(x_M\) fractional, this is a Wilson-style conditional diagnostic for the expected randomized-tie TPR, not an exact binomial coverage guarantee. The fixed-threshold Wilson interval is conditional on the selected threshold and tie rule, so it does not replace the stratified bootstrap interval, which resamples both the threshold selection and the member TPR estimate. The two intervals are reported as complementary uncertainty views: bootstrap intervals are the main evidence for low-FPR metric uncertainty, and Wilson intervals are conditional checks after the observed thresholding decision.
+
+\hypertarget{audit-size-and-tail-warnings}{%
+\subsection{3.8 Audit Size and Tail Warnings}\label{audit-size-and-tail-warnings}}
+
+To assess how audit sample size affects reported metrics, the workflow performs repeated balanced audit subsampling at \(n \in \{250, 500, 1000, 2000, 5000\}\) per group. For each dataset/model and requested \(n\), the analysis samples \(n\) member scores and \(n\) non-member scores without replacement. Within each dataset/model/sample-size/repeat, the same sampled member and non-member rows are reused across attack scores. This makes score comparisons within a repeat paired with respect to the sampled audit records, although the manuscript does not use this design to make formal paired-superiority claims.
+
+The expanded first-pass analysis used 50 subsampling repeats for the full grid. The output reports per-repeat metric values and aggregated sensitivity summaries, including mean, standard deviation, quantiles, interval width, minimum, maximum, and instability notes. Any empirical 95\% range from these repeats is a descriptive central repeated-subsample range, not a confidence interval. These 50-repeat summaries are fixed-score-array sensitivity diagnostics. They describe how reported metrics change when smaller balanced audit pools are drawn from the available score arrays; they are not coverage studies and do not capture target retraining variability.
+
+Low-FPR estimates are additionally annotated with tail-resolution warnings based on the expected false-positive budget; \protect\hyperlink{appendix-d-audit-size-sensitivity-and-tail-resolution-warnings}{Appendix D} records the audit-size sensitivity outputs and warning boundary:
+
+\[
+\mathrm{FPBudget} = n_N \alpha,
+\]
+
+where \(n_N\) is the number of non-members in the audit sample. The workflow emits a warning when \(\mathrm{FPBudget} < 5\) and a severe warning when \(\mathrm{FPBudget} < 1\). This rule is a deterministic reporting guardrail rather than a model-performance claim. Tail-resolution warnings depend only on the number of non-member audit records and the requested FPR. They mark operating points where the requested false-positive tail contains too few expected records for a point estimate to be read without explicit caution. For example, at 0.1\% FPR, an audit sample with 250 non-members has an expected false-positive budget of 0.25, and even 5000 non-members gives only 5 expected false positives.
+
+\hypertarget{score-array-audit-tool}{%
+\subsection{3.9 Score-array Audit Tool}\label{score-array-audit-tool}}
+
+The score-array audit tool packages the metric and uncertainty protocol into a reusable interface. It accepts paired member/non-member score arrays in compressed-array or tabular form. Each input declares membership status, score name, and optional dataset or model metadata. This keeps the interface independent of the target-training pipeline while preserving the information needed for reproducible metric reporting.
+
+Given score arrays, the tool returns a reproducibility bundle containing configuration metadata, a human-readable summary report, point metrics, stratified bootstrap intervals, conditional fixed-threshold Wilson intervals, audit-sample-size sensitivity summaries, tail-resolution warnings, and diagnostic figures for score distributions, low-FPR ROC behavior, TPR versus audit size, and interval width versus audit size. Appendix B gives a compact supplementary output index rather than printing the full machine-readable tables in the paper.
+
+The tool is independent of target-model training. It can therefore audit the simple scores used in this paper or scores produced by reference-model attacks, provided those attacks export member and non-member score arrays with the same larger-is-member convention and a stated aggregation protocol. This input condition is important: if scores have been pooled across samples, targets, or reference populations, any required upstream checks such as per-sample FPR calibration or finite-population-bias diagnostics must be performed before applying the reporting layer.
+
+\hypertarget{completed-run-configurations}{%
+\subsection{3.10 Completed Run Configurations}\label{completed-run-configurations}}
+
+The expanded empirical base is the expanded first-pass analysis. It completed all 25 dataset/model combinations across five datasets and five model families, with no target-training sample cap. The analysis used four attack scores, two target FPR levels, 50 stratified bootstrap repeats for the full first-pass grid, 50 repeated balanced audit-subsampling repeats, and a fixed random seed.
+
+The expanded first-pass analysis produced 25 trained target-model records, 25 attack-score sets, 500 main metric rows, 500 first-pass confidence-interval rows, 125000 per-repeat audit-subsampling rows, and 2500 sample-size sensitivity rows. The validity report checks completeness, finite metric values, and expected output counts.
+
+The selected final bootstrap analysis reuses attack-score arrays from the expanded first-pass analysis, selects main-table candidate score rows from the expanded model-comparison summary, and writes a separate final-interval table. It used confidence level 0.95 and 1000 bootstrap repeats for every selected interval row.
+
+\hypertarget{bounded-supplemental-checks}{%
+\subsection{3.11 Bounded Supplemental Checks}\label{bounded-supplemental-checks}}
+
+Six bounded supplements strengthen the reporting claim without changing the paper into a new-attack or production-audit benchmark. First, the reporting-practice mini audit records a 16-paper convenience sample for context and uses the 11 core/direct-reliability rows as the printed denominator for six reporting fields: audit sample sizes, low-FPR uncertainty intervals, threshold or tie handling, audit-size sensitivity, false-positive-budget warnings, and reusable reporting protocol. The audit includes one direct 2026 reliability paper as a closest competing positioning row and remains a scoped positioning check, not a systematic review (\protect\hyperlink{appendix-a-reporting-practice-mini-audit}{Appendix A}).
+
+Second, the reference-centered compatibility appendix is a bounded workflow-reuse check for non-main-grid score inputs in Credit Default and Adult Income random-forest settings. The appendix script trains 12 reference random forests on stratified 50\% subsets and exports three larger-is-member scores: reference-centered negative loss, reference logit margin, and z-scored reference logit margin. These scores estimate out-of-reference difficulty and standardize target-model evidence, but they do not fit separate in/out shadow distributions or compute a LiRA likelihood ratio. The arrays are passed to the same audit tool with 1000 bootstrap repeats and 200 audit-size subsampling repeats (\protect\hyperlink{appendix-f-reference-centered-score-check}{Appendix F}).
+
+Third, the bounded shadow-model score check exports a likelihood-ratio-style score array for Credit Default and Adult Income random-forest targets. It trains eight random-forest shadow models per dataset, pools shadow train and holdout negative-loss scores, fits global Gaussian train/holdout score distributions, and evaluates \(\log p(s_{\mathrm{target}}\mid \mathrm{shadow\ train})-\log p(s_{\mathrm{target}}\mid \mathrm{shadow\ holdout})\). This is a shadow-model score-array compatibility case, not a full LiRA or RMIA benchmark: it does not estimate per-example in/out reference distributions, implement an RMIA offline/online ratio, or claim state-of-the-art attack performance. The generated arrays are audited with 1000 bootstrap repeats and 200 audit-size subsampling repeats (\protect\hyperlink{appendix-h-bounded-shadow-model-score-check}{Appendix H}).
+
+Fourth, the tie-rule sensitivity check compares strict \(s>\tau\), inclusive \(s\geq\tau\), and randomized tie-aware operating points for representative negative-loss rows with many threshold ties. It reports how much TPR and empirical FPR can move when a low-FPR threshold lands on a tied score value (\protect\hyperlink{appendix-i-tie-rule-sensitivity}{Appendix I}).
+
+Fifth, the split/seed sensitivity check repeats target construction for three representative settings: Credit Default Random Forest, Credit Default ExtraTrees, and Adult Income Random Forest. Each repeat redraws a stratified 50/50 member/non-member split, uses the same integer as the target-model random seed, retrains the 200-tree target model, recomputes negative-loss member/non-member arrays, and reports AUC, TPR@1\%FPR, and TPR@0.1\%FPR over five seeds. This is a combined split-plus-seed check rather than a factorial decomposition of split variability and learner-seed variability (\protect\hyperlink{appendix-j-splitseed-sensitivity}{Appendix J}).
+
+Sixth, the label-uncertainty supplement simulates audit-label uncertainty for the Credit Default random-forest negative-loss setting. The label-uncertainty script symmetrically swaps member and non-member audit labels at 0\%, 0.5\%, 1\%, 2\%, and 5\% corruption, with 200 repeated draws per rate. One canonical corrupted score array per rate is also audited with the existing score-array tool. This perturbation check models only simple symmetric label uncertainty and is not a production-audit simulation (\protect\hyperlink{appendix-g-label-uncertainty-check}{Appendix G}).
+
+\hypertarget{reproducibility-and-scope}{%
+\subsection{3.12 Reproducibility and Scope}\label{reproducibility-and-scope}}
+
+The analysis package separates target training, score-array auditing, and selected final bootstrap analysis into distinct workflows. Analysis-specific outputs are isolated so that reproducibility checks, expanded analyses, audit examples, and final interval outputs do not overwrite one another.
+
+A clean temporary-environment reproducibility check validated the score-array reporting layer. The check installed the declared analysis dependencies, generated example member/non-member score arrays, ran both compressed-array and tabular input paths, and confirmed matching AUC snapshots for confidence, modified entropy, negative entropy, and negative loss. A later frozen-dependency check validated the same reporting path. This minimal check supports reproducibility of the reporting layer, not a full rerun of the 25-setting empirical grid.
+
+The reproducibility package keeps raw-data provenance separate from cleaned arrays, split files, metadata, and data dictionaries. The project uses public tabular datasets and does not collect new human-subject data. The analysis does not attempt to re-identify individuals and treats membership labels only as controlled evaluation labels for the audit setting.
+
+The scope of the empirical claim is intentionally bounded. The main grid evaluates simple score-based MIAs on five public tabular datasets and five scikit-learn-compatible classifier families. The reference-centered and bounded shadow-model appendices demonstrate compatibility for non-main-grid score arrays, but they do not implement a full LiRA/RMIA benchmark and do not rank attacks. The tie-rule and split/seed supplements test reporting sensitivity in representative settings, not every dataset/model/score combination. The label-uncertainty supplement tests one symmetric corruption mechanism, but it does not claim production privacy-audit readiness. The manuscript does not study language-model or generative-model membership inference.
+
+\hypertarget{results}{%
+\section{4. Results}\label{results}}
+
+The Results follow the audit logic rather than the order of workflow outputs. We first ask whether the evaluated simple scores contain membership signal in the expanded tabular grid, then test whether global discrimination transfers to low-FPR operating points, and finally examine whether those tail estimates remain interpretable under finite non-member audit budgets. The expanded first-pass analysis completed all 25 dataset/model combinations and produced 500 point-metric rows, 500 first-pass interval rows, 125000 repeat-level subsampling rows, and 2500 audit-size sensitivity rows. Selected final bootstrap analysis then recomputed 1000-bootstrap intervals for 37 candidate score rows and 111 metric intervals. Main-text interval claims use these selected final rows; full-grid appendix intervals remain first-pass outputs unless explicitly labelled otherwise.
+
+\hypertarget{model-family-dependence-in-simple-score-mia}{%
+\subsection{4.1 Model-Family Dependence in Simple-Score MIA}\label{model-family-dependence-in-simple-score-mia}}
+
+The expanded grid showed a clear model-family pattern. ExtraTrees and Random Forest produced the strongest observed simple-score MIA signal, whereas logistic regression, HistGradientBoosting, and small MLP were near random or only weakly above random in most settings. This statement is descriptive rather than a formal pairwise test or a universal ranking of model families.
+
+ExtraTrees produced the largest best-AUC values in every dataset, but the pattern should be read as a descriptive signal from this controlled tabular grid rather than as a formal model-family ranking. Its best-AUC point estimates ranged from 0.869666 on Adult Income to 0.998202 on Diabetes Readmission. Selected 1000-bootstrap intervals were narrow for the strongest AUC estimates. Credit Default ExtraTrees had AUC 0.997663 with 95\% CI {[}0.997025, 0.998254{]}, Covertype ExtraTrees had AUC 0.976877 with 95\% CI {[}0.976501, 0.977238{]}, and Diabetes Readmission ExtraTrees had AUC 0.998202 with 95\% CI {[}0.997946, 0.998477{]}.
+
+The ExtraTrees sanity check supports a bounded explanation for these high values. Across the five datasets, ExtraTrees train accuracy ranged from 0.996455 to 1.000000, while non-member accuracy ranged from 0.809733 to 0.944118. Train log loss was near zero in every dataset, whereas non-member log loss ranged from 0.204254 to 0.772135. The check found no member/non-member index overlap, no retained ID-like feature, no non-finite attack scores, and no one-score anomaly. Instead, the high-AUC settings showed saturated member scores and large train/non-member score gaps. For example, all four ExtraTrees score families had AUC at least 0.9 on Credit Default, Covertype, and Diabetes Readmission; \protect\hyperlink{appendix-e-extratrees-sanity-checks}{Appendix E} gives the sanity-check boundary.
+
+This saturation also affects low-FPR interpretation. In Credit Default, 99.88\% of member values sat at the most member-like value for each ExtraTrees score family, while about 0.27 to 0.35\% of non-member values reached that same value. In Covertype and Diabetes Readmission, all member values sat at the member maximum, while about 4.62\% and 0.36\% of non-member values did so. These ties make the exact low-FPR threshold sensitive to tie handling, so the Results pair the high AUC values with the tie-aware operating-point definition and uncertainty intervals.
+
+This tie behavior was not incidental. In representative negative-loss rows, Credit Default Random Forest at 0.1\% FPR used a threshold at the tied zero-loss boundary with tie fraction 0.349, yielding the requested effective false-positive budget of 15 among 15000 non-members. Credit Default ExtraTrees used a similar boundary with tie fraction 0.366 and a much larger tied member mass, yielding TPR 0.365 under the expected randomized rule. Diabetes Readmission Random Forest had tie fraction 0.795 at TPR@0.1\%FPR. These rows should therefore be read as expected low-FPR operating points under the stated tie rule, not as ordinary strict-threshold counts.
+
+The same sanity check examined exact feature duplicates across the controlled member/non-member split. It found no index overlap in any dataset and no retained ID-like features. Exact cross-split duplicate feature rows were present in Credit Default, Adult Income, and Bank Marketing, with the largest duplicate fraction in Bank Marketing. This duplicate pattern does not explain the strongest ExtraTrees AUCs, because Covertype and Diabetes Readmission had no exact duplicate feature rows and still showed high ExtraTrees AUC. The check does not rule out all correlated-record effects, so this remains a boundary rather than an exhaustive leakage exclusion.
+
+Table 1 summarizes the sanity checks that should accompany the ExtraTrees interpretation. Duplicate counts refer to exact feature-row overlaps across the member/non-member split, not to index overlap.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.4pt}
+\caption{ExtraTrees sanity checks. Check failures are reported as index overlap / ID-like feature / non-finite score; duplicate counts refer to exact feature-row overlaps across the member/non-member split.}
+\label{tab:extratrees-sanity}
+\begin{tabularx}{\columnwidth}{@{}l Y Y c r@{}}
+\toprule
+Data & Acc. tr/non & Loss tr/non & Checks & Dups \\
+\midrule
+Credit & 0.999/0.810 & 0.0008/0.479 & 0/0/0 & 20 \\
+Covertype & 1.000/0.944 & 0.0000/0.204 & 0/0/0 & 0 \\
+Adult & 1.000/0.830 & 0.0001/0.489 & 0/0/0 & 25 \\
+Bank & 0.996/0.883 & 0.0051/0.772 & 0/0/0 & 897 \\
+Diabetes & 1.000/0.889 & 0.0000/0.339 & 0/0/0 & 0 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Random Forest also showed clear membership signal, although usually below ExtraTrees. Its best-AUC estimates ranged from 0.628639 on Adult Income to 0.798968 on Diabetes Readmission. Final bootstrap intervals remained separated from the random baseline in the strongest Random Forest settings. Credit Default Random Forest had AUC 0.758422 with 95\% CI {[}0.753012, 0.763875{]}. Covertype Random Forest had AUC 0.699628 with 95\% CI {[}0.698296, 0.700967{]}. Diabetes Readmission Random Forest had AUC 0.798968 with 95\% CI {[}0.796261, 0.801824{]}.
+
+In contrast, several model families produced weak simple-score membership signal. Logistic regression was close to random across the grid, with best-AUC values from 0.496691 on Credit Default to 0.504470 on Adult Income. HistGradientBoosting was consistently only slightly above random, with best-AUC values from 0.506816 on Covertype to 0.516528 on Credit Default. Small MLP best-AUC values ranged from 0.502556 on Covertype to 0.512972 on Adult Income. These results do not imply that these target models are privacy-safe; they show that the evaluated simple score-based MIAs were weak for these settings.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\caption{Main descriptive AUC pattern across model families.}
+\label{tab:model-family-auc}
+\begin{tabularx}{\columnwidth}{@{}l l l X@{}}
+\toprule
+Family & Best AUC & Example CI & Boundary \\
+\midrule
+Logistic & .497-.504 & Cov .501 [.499,.502] & Near random. \\
+HistGB & .507-.517 & CD .517 [.510,.523] & Weak signal. \\
+Small MLP & .503-.513 & Cov .503 [.501,.504] & Near random. \\
+Random Forest & .629-.799 & Diab .799 [.796,.802] & Clear signal. \\
+ExtraTrees & .870-.998 & Diab .998 [.998,.998] & Strongest here. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\columnwidth]{figures/flattened/expanded_best_auc_heatmap.png}
+\caption{Best simple-score MIA AUC across the expanded tabular grid. The heatmap summarizes model-family dependence across datasets and target-model families.}
+\label{fig:best-auc}
+\end{figure}
+
+\hypertarget{accuracy-alone-does-not-explain-the-pattern}{%
+\subsection{4.2 Accuracy Alone Does Not Explain the Pattern}\label{accuracy-alone-does-not-explain-the-pattern}}
+
+The expanded results indicate that predictive accuracy alone is not enough to explain simple-score membership leakage. HistGradientBoosting often improved non-member accuracy relative to logistic regression while remaining close to random under the evaluated MIA scores. For example, on Covertype, logistic regression had train and non-member accuracy of 0.7244 and 0.7244, whereas HistGradientBoosting had 0.8431 and 0.8334. Yet their best-AUC values were 0.500710 and 0.506816, respectively. On Diabetes Readmission, logistic regression and HistGradientBoosting had similar non-member accuracy near 0.888, and their best-AUC values were 0.503826 and 0.506877.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.2pt}
+\caption{Representative train/non-member accuracy-gap and best-AUC rows.}
+\label{tab:gap-auc-rows}
+\begin{tabular}{@{}l l r r@{}}
+\toprule
+Dataset & Model & Gap & Best AUC \\
+\midrule
+Covertype & Logistic & 0.0000 & 0.500710 \\
+Covertype & HistGB & 0.0097 & 0.506816 \\
+Credit Default & RF & 0.1849 & 0.758422 \\
+Credit Default & ET & 0.1897 & 0.997663 \\
+Adult Income & RF & 0.1478 & 0.628639 \\
+Diabetes & ET & 0.1114 & 0.998202 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The strongest MIA signals appeared when target models had large train/non-member accuracy gaps. Credit Default Random Forest had train accuracy 0.9994 and non-member accuracy 0.8145, with best AUC 0.758422. Credit Default ExtraTrees had train accuracy 0.9994 and non-member accuracy 0.8097, with best AUC 0.997663. Similar patterns appeared for Diabetes Readmission, where Random Forest and ExtraTrees reached train accuracy 1.0000 and best-AUC values 0.798968 and 0.998202.
+
+The table makes the scatter plot auditable in the narrow column: the first rows show improved predictive accuracy without meaningful simple-score separation, while the tree rows show that large gaps can coincide with much stronger MIA signal. The full grid is summarized in \protect\hyperlink{appendix-b-supplementary-output-index}{Appendix B}, and selected final intervals are separated in \protect\hyperlink{appendix-c-final-bootstrap-boundary}{Appendix C}, so this subsection uses the plot and rows as a pattern summary rather than a ranking.
+
+This supports a bounded interpretation: in this tabular grid, simple-score membership signal aligns more closely with model-family behavior and train/non-member gap than with target predictive accuracy alone. The plotted gap/AUC relationship makes this boundary visible, but the result does not establish a universal overfitting law and should not be generalized to reference-model attacks without additional experiments.
+
+\begin{figure}[!b]
+\centering
+\includegraphics[width=0.86\columnwidth]{figures/flattened/expanded_accuracy_gap_vs_best_auc.png}
+\caption{Train/non-member accuracy gap versus best simple-score MIA AUC. Larger gaps track stronger simple-score signal; accuracy alone is insufficient.}
+\label{fig:accuracy-gap}
+\end{figure}
+
+\hypertarget{auc-and-low-fpr-tpr-differ}{%
+\subsection{4.3 AUC and Low-FPR TPR Differ}\label{auc-and-low-fpr-tpr-differ}}
+
+The low-FPR results show why AUC should not be used as a substitute for operating-point metrics. Random Forest had above-random AUC in all five datasets, but negative-loss TPR at 0.1\% FPR was small in several settings. Adult Income Random Forest had best AUC 0.628639, but negative-loss TPR@0.1\%FPR was 0.001415 with 95\% CI {[}0.001366, 0.001462{]}. Bank Marketing Random Forest had best AUC 0.659716, while negative-loss TPR@0.1\%FPR was 0.002503 with 95\% CI {[}0.002363, 0.002655{]}. Covertype Random Forest had best AUC 0.699628, while negative-loss TPR@0.1\%FPR was 0.003148 with 95\% CI {[}0.003078, 0.003223{]}.
+
+Other settings showed both high AUC and high low-FPR TPR. Credit Default ExtraTrees had AUC 0.997663 and negative-loss TPR@1\%FPR 0.998800 with 95\% CI {[}0.998267, 0.999333{]}. Its TPR@0.1\%FPR was lower and less precise, 0.365415 with 95\% CI {[}0.277444, 0.516655{]}. Diabetes Readmission ExtraTrees had AUC 0.998202, TPR@1\%FPR 1.000000 with 95\% CI {[}1.000000, 1.000000{]}, and TPR@0.1\%FPR 0.278049 with 95\% CI {[}0.243459, 0.322096{]}. These cases show that low-FPR operating behavior can be either close to baseline or very strong, even among models with elevated AUC.
+
+Table 4 summarizes representative negative-loss low-FPR intervals for tree ensembles and prints the denominator and tie context needed to interpret the 0.1\% FPR tail. Full-grid appendix intervals remain first-pass intervals unless separately recomputed; the selected-row final-bootstrap boundary is stated in \protect\hyperlink{appendix-c-final-bootstrap-boundary}{Appendix C}.
+
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\caption{Selected low-FPR rows with 1,000-bootstrap percentile intervals. The intervals are conditional on selected score rows and are not selective-inference adjusted.}
+\label{tab:low-fpr-selected}
+\begin{tabular}{@{}l l l r r r r l r l@{}}
+\toprule
+Dataset & Model & Score & $n_N$ & FP0.1 & Tie0.1 & TPR@1\% & 95\% CI & TPR@0.1\% & 95\% CI \\
+\midrule
+Credit Default & Random Forest & neg loss & 15000 & 15.0 & 0.349 & 0.048732 & [0.041973, 0.055601] & 0.005070 & [0.003736, 0.007455] \\
+Credit Default & ExtraTrees & neg loss & 15000 & 15.0 & 0.366 & 0.998800 & [0.998267, 0.999333] & 0.365415 & [0.277444, 0.516655] \\
+Covertype & Random Forest & neg loss & 290506 & 290.5 & 0.032 & 0.031477 & [0.030779, 0.032282] & 0.003148 & [0.003078, 0.003223] \\
+Covertype & ExtraTrees & neg loss & 290506 & 290.5 & 0.022 & 0.216231 & [0.212715, 0.219898] & 0.021623 & [0.021287, 0.021975] \\
+Adult Income & Random Forest & neg loss & 24421 & 24.4 & 0.005 & 0.014147 & [0.013684, 0.014622] & 0.001415 & [0.001366, 0.001462] \\
+Adult Income & ExtraTrees & neg loss & 24421 & 24.4 & 0.004 & 0.038377 & [0.037649, 0.039142] & 0.003838 & [0.003760, 0.003922] \\
+Bank Marketing & Random Forest & neg loss & 20594 & 20.6 & 0.015 & 0.025033 & [0.023547, 0.026568] & 0.002503 & [0.002363, 0.002655] \\
+Bank Marketing & ExtraTrees & neg loss & 20594 & 20.6 & 0.004 & 0.043701 & [0.042601, 0.044817] & 0.004370 & [0.004261, 0.004481] \\
+Diabetes Readmission & Random Forest & neg loss & 50883 & 50.9 & 0.795 & 0.115844 & [0.108342, 0.123458] & 0.012578 & [0.010024, 0.016442] \\
+Diabetes Readmission & ExtraTrees & neg loss & 50883 & 50.9 & 0.278 & 1.000000 & [1.000000, 1.000000] & 0.278049 & [0.243459, 0.322096] \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.86\textwidth]{figures/flattened/expanded_neg_loss_low_fpr_heatmaps.png}
+\caption{Negative-loss low-FPR operating behavior across datasets and target-model families. The paired heatmaps show TPR@1\%FPR and TPR@0.1\%FPR for the canonical negative-loss score, using panel-specific color scales for the two operating points.}
+\label{fig:low-fpr-heatmaps}
+\end{figure*}
+
+\hypertarget{audit-size-sets-tail-resolution}{%
+\subsection{4.4 Audit Size Sets Tail Resolution}\label{audit-size-sets-tail-resolution}}
+
+The sample-size analysis provides the most direct evidence that low-FPR tail reliability is controlled by the non-member audit budget. A target FPR fixes an expected false-positive budget, \(n_N\alpha\). At 0.1\% FPR, 250 non-members provide only 0.25 expected false positives, 500 provide 0.5, 1000 provide 1, and even 5000 provide only 5. These are deterministic resolution limits, not properties of a particular attack score.
+
+Repeated balanced subsampling showed the practical consequence of this arithmetic. For Credit Default Random Forest with negative loss, TPR@0.1\%FPR had mean 0.0155 and empirical 95\% range {[}0.0015, 0.0595{]} at \(n=250\) per group, where the expected false-positive budget was below one. At \(n=5000\), the mean was 0.0054 and the range narrowed to {[}0.0033, 0.0081{]}. The point estimate therefore became easier to read only when the non-member tail contained enough expected false positives to support the requested operating point.
+
+The expanded first-pass analysis generated 125000 per-repeat subsampling rows and 2500 sample-size sensitivity rows. Figure 4 aggregates the negative-loss TPR@0.1\%FPR interval widths across the expanded grid and shows that tail-metric variability decreases with audit size, while saturated tree settings remain visibly harder to summarize. The reporting rule follows directly: a low-FPR TPR should be reported with \(n_N\), the expected false-positive budget, threshold/tie behavior, and the warning level.
+
+Table 4 records the false-positive budget that should accompany low-FPR MIA reporting. The implementation emits a warning below five expected false positives; the table marks exactly five as borderline because it is the first audit size where a nominal 0.1\% tail contains only a handful of expected non-member records.
+
+\begin{table}[t]
+\centering
+\scriptsize
+\caption{Expected false-positive budgets for common audit sizes.}
+\label{tab:fp-budget}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{r r r l}
+\toprule
+$n_N$ & FPR & Exp. FP & Level \\
+\midrule
+250 & 1\% & 2.5 & warning \\
+250 & 0.1\% & 0.25 & severe \\
+500 & 1\% & 5 & borderline \\
+500 & 0.1\% & 0.5 & severe \\
+1000 & 1\% & 10 & none \\
+1000 & 0.1\% & 1 & warning \\
+5000 & 1\% & 50 & none \\
+5000 & 0.1\% & 5 & borderline \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.78\textwidth]{figures/flattened/expanded_tpr001_width_by_audit_size.png}
+\caption{Audit-sample size and TPR@0.1\%FPR uncertainty under repeated balanced subsampling. The plot aggregates negative-loss rows across the expanded grid and shows mean empirical 95\% subsampling interval width by model family.}
+\label{fig:audit-size-tail}
+\end{figure*}
+
+\hypertarget{reusable-reporting-workflow}{%
+\subsection{4.5 Reusable Reporting Workflow}\label{reusable-reporting-workflow}}
+
+The score-array audit tool turns the reporting procedure into a reusable protocol. It accepts member/non-member score arrays in compressed-array or tabular form and produces point metrics, stratified bootstrap intervals, fixed-threshold Wilson intervals, repeated balanced audit-subsampling summaries, tail-resolution warnings, diagnostic figures, and summary reports. The tool is independent of target-model training, so it can evaluate scores produced by the current simple attacks or by other stated score-generation protocols if their member/non-member score arrays are supplied.
+
+The compressed-array and tabular example validations produced matching AUC snapshots for the same sampled score data. Each validation bundle included main metric rows, bootstrap interval rows, fixed-threshold Wilson interval rows, per-repeat subsampling rows, sample-size sensitivity rows, tail-resolution warning rows, diagnostic figures, and a human-readable summary report. This supports the claim that the reporting workflow can be reused outside the original target-model training pipeline.
+
+The audit workflow turns low-FPR MIA reporting into a set of required fields rather than a single point estimate. Table 5 gives the reporting checklist used in this study. It is a reporting protocol, not an attack algorithm: it can be applied to the simple scores studied here or to other larger-is-member score arrays once member and non-member arrays are available under a stated audit design.
+
+\begin{table*}[t]
+\centering
+\scriptsize
+\caption{Reporting checklist for finite-sample low-FPR MIA audits.}
+\label{tab:reporting-checklist}
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}p{0.18\textwidth} X X@{}}
+\toprule
+Item & Required report & Purpose \\
+\midrule
+Score definition & Score family and larger-is-member convention. & Defines what evidence was audited. \\
+Audit sizes & Member and non-member counts for each metric. & Makes tail resolution visible. \\
+AUC & Full-distribution member/non-member discrimination. & Separates global ranking from tail operation. \\
+Low-FPR TPR & TPR@1\%FPR and TPR@0.1\%FPR at the requested operating points. & Answers the practical false-positive-rate question. \\
+Threshold and ties & Threshold rule, empirical FPR, and tie handling. & Prevents ambiguous low-FPR operating points. \\
+Bootstrap interval & Stratified resampling regime and confidence level. & Captures threshold-selection and TPR uncertainty. \\
+Wilson interval & Conditional fixed-threshold interval. & Provides a member-side diagnostic after thresholding. \\
+Audit-size sensitivity & Repeated balanced subsampling summary. & Shows how estimates change with smaller audits. \\
+Tail budget & Expected false positives, $n_N\alpha$, and warning level. & Flags low-resolution tail estimates. \\
+Diagnostics & Score distribution, low-FPR, and interval-width summaries. & Supports visual checking of the reported metrics. \\
+Reproducibility path & Minimal score-array rerun route. & Allows the reporting layer to be checked without retraining. \\
+Scope boundary & Dataset, score, model-family, and attack-scope limits. & Prevents overclaiming beyond the evidence base. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+This protocol makes the finite-sample status of a low-FPR result visible. A reader can see the audit sample size, the target operating point, the interval method, the tie rule, and the expected false-positive budget before interpreting the reported TPR. It also marks where the claim stops: public tabular simple-score evidence supports the present empirical results, while reference-model attacks, non-tabular domains, and production audits require separate score arrays and audit designs.
+
+We interpret fixed-threshold Wilson intervals as conditional checks. They estimate TPR uncertainty after a threshold and tie rule have been selected. They complement the stratified bootstrap intervals, which better reflect the fact that the threshold itself is estimated from the finite non-member score sample. This distinction is part of the reporting protocol.
+
+\hypertarget{bounded-supplemental-checks-1}{%
+\subsection{4.6 Bounded Supplemental Checks}\label{bounded-supplemental-checks-1}}
+
+The supplemental checks were used only to test whether the reporting claim survives bounded extensions beyond the main grid. The reporting-practice mini audit supports the positioning claim: low-FPR metrics and threshold concerns were visible in the sampled core/direct-reliability papers, but the complete package of low-FPR intervals, audit-size sensitivity, tie/boundary handling, and false-positive-budget warnings was not reported as a reusable score-array protocol. The result motivates the reporting protocol as a missing generic layer around score arrays; \protect\hyperlink{appendix-a-reporting-practice-mini-audit}{Appendix A} gives the coding boundary.
+
+The reference-centered appendix is a bounded workflow-reuse check for non-main-grid score arrays. In the Credit Default random-forest setting, the simple negative-loss baseline had AUC 0.7584 and TPR@1\%FPR 0.0487, while the reference-centered z-scored logit margin produced AUC 0.9250 and TPR@1\%FPR 0.3739. In the Adult Income random-forest setting, the corresponding values were 0.6286 and 0.0141 for the simple baseline, and 0.7816 and 0.1604 for the reference-centered z-scored logit margin. These contrasts show that the reporting layer can audit reference-centered inputs whose score distributions differ from the four main-grid simple scores. They are not attack-superiority claims, and they should not be read as LiRA or RMIA results because the appendix does not estimate separate in/out likelihood-ratio distributions. The low-FPR reporting obligation remains: in Credit Default, the reference-centered z-scored logit margin had TPR@0.1\%FPR 0.0160 with 95\% CI {[}0.0043, 0.0474{]}. \protect\hyperlink{appendix-f-reference-centered-score-check}{Appendix F} gives the compact compatibility table.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/flattened/q1_reference_centered_score_compatibility.png}
+\caption{Reference-centered score-array compatibility in two bounded random-forest settings. The panels report AUC, TPR@1\%FPR, and TPR@0.1\%FPR for the simple negative-loss context and three reference-centered score arrays; the comparison illustrates audit-tool compatibility, not LiRA/RMIA benchmarking or attack ranking.}
+\label{fig:reference-centered-score}
+\end{figure*}
+
+The bounded shadow-model score check exercises a likelihood-ratio-style score array without claiming a full LiRA/RMIA implementation. For Credit Default random forest, the target negative-loss context row had AUC 0.7584, TPR@1\%FPR 0.0487, and TPR@0.1\%FPR 0.0051; the bounded shadow-model score had AUC 0.6254, TPR@1\%FPR 0.0089, and TPR@0.1\%FPR 0.0009. For Adult Income random forest, the corresponding bounded shadow-model values were AUC 0.6178, TPR@1\%FPR 0.0120, and TPR@0.1\%FPR 0.0012. These rows make two points at once: a shadow-model score array can be passed through the same reporting layer, and weak or near-baseline low-FPR readings still require explicit thresholds, intervals, and tail-budget context (\protect\hyperlink{appendix-h-bounded-shadow-model-score-check}{Appendix H}).
+
+The tie-rule sensitivity check shows why the randomized tie-aware convention is reported explicitly. In representative tree rows, a low-FPR threshold can land on a mass point. At 0.1\% FPR, Credit Default ExtraTrees negative loss had strict TPR/FPR 0.0000/0.0000, randomized TPR/FPR 0.3654/0.0010, and inclusive TPR/FPR 0.9988/0.0027. Diabetes Readmission ExtraTrees at the same target FPR moved from 0.0000/0.0000 under the strict rule to 0.2780/0.0010 under randomized ties and 1.0000/0.0036 under the inclusive rule. The randomized column is therefore not a cosmetic implementation detail; it defines the estimand used for low-FPR reporting (\protect\hyperlink{appendix-i-tie-rule-sensitivity}{Appendix I}).
+
+The split/seed sensitivity check reran target construction rather than only resampling fixed score arrays. Over five stratified split/model seeds, Credit Default Random Forest negative loss had AUC mean 0.7594 with range {[}0.7547, 0.7626{]}, TPR@1\%FPR mean 0.0578 with range {[}0.0487, 0.0638{]}, and TPR@0.1\%FPR mean 0.0063 with range {[}0.0051, 0.0068{]}. Adult Income Random Forest was similarly stable at the 0.1\% tail, with TPR@0.1\%FPR mean 0.0014 and range {[}0.0014, 0.0014{]}. Credit Default ExtraTrees remained high-AUC but its 0.1\% tail was more seed-sensitive, with TPR@0.1\%FPR mean 0.3183 and range {[}0.2457, 0.3747{]}. This supports the main point that low-FPR reports should disclose not only fixed-score-array uncertainty, but also when target construction choices are part of the audit design (\protect\hyperlink{appendix-j-splitseed-sensitivity}{Appendix J}).
+
+The audit-label uncertainty check similarly changed point estimates while preserving the reporting need. In the Credit Default random-forest negative-loss setting, mean AUC fell from 0.7584 with exact labels to 0.7326 under 5\% symmetric label corruption. Mean TPR@1\%FPR fell from 0.0487 to 0.0401, and mean TPR@0.1\%FPR fell from 0.0051 to 0.0041. The 5\% canonical audit-tool evaluation reported AUC 0.7332 {[}0.7273, 0.7385{]}, TPR@1\%FPR 0.0372 {[}0.0316, 0.0442{]}, and TPR@0.1\%FPR 0.0037 {[}0.0028, 0.0050{]}. The tail-resolution warnings persisted because they depend on the FPR and non-member audit budget, not on whether labels are perfectly known; \protect\hyperlink{appendix-g-label-uncertainty-check}{Appendix G} gives the repeated-corruption summary.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/flattened/q1_label_uncertainty_degradation.png}
+\caption{Metric degradation under symmetric audit-label corruption. Each panel tracks one metric across 0\%, 0.5\%, 1\%, 2\%, and 5\% corruption for the Credit Default random-forest negative-loss audit, with repeated-perturbation ranges and bootstrap intervals.}
+\label{fig:label-uncertainty}
+\end{figure*}
+
+Together, these checks support reuse of the reporting layer on bounded non-main-grid inputs and show that the reporting need persists under threshold-rule, split/seed, and label perturbations; they are not attack benchmarks, production-audit simulations, or formal comparisons with LiRA/RMIA. Their boundaries are deliberately narrow. The reporting-practice mini audit covers a bounded sample rather than a systematic review. The reference-centered workflow-reuse check covers Credit Default random forest and Adult Income random forest score arrays. The bounded shadow-model score check uses global pooled shadow train/holdout distributions rather than per-example in/out likelihood-ratio estimates. The tie-rule check covers representative tied negative-loss rows, the split/seed check covers three representative settings over five seeds, and the label-uncertainty check covers a simple symmetric perturbation of the Credit Default random-forest negative-loss audit, not production audit readiness.
+
+\hypertarget{results-boundaries}{%
+\subsection{4.7 Results Boundaries}\label{results-boundaries}}
+
+The Results support a bounded claim about reliable reporting of score-based tabular MIA audits. The main grid remains limited to negative loss, confidence, negative entropy, and negative modified prediction entropy. The reference-centered and bounded shadow-model appendices supply non-main-grid score arrays as compatibility demonstrations, but they do not introduce a new attack, do not implement a full LiRA/RMIA benchmark, and do not establish formal pairwise superiority between attack families, model families, or score types. The tie-rule and split/seed appendices are sensitivity checks for representative rows, not exhaustive reruns of the expanded grid.
+
+The selected final bootstrap analysis supports main-table candidate rows, not every metric in the full 500-row expanded appendix grid. Appendix tables for every score/metric combination are therefore described as first-pass outputs unless separately recomputed (\protect\hyperlink{appendix-b-supplementary-output-index}{Appendices B} and \protect\hyperlink{appendix-c-final-bootstrap-boundary}{C}). This boundary keeps the Results text aligned with the actual evidence and avoids presenting first-pass intervals as final-paper-grade uncertainty for every row.
+
+\hypertarget{results-summary}{%
+\subsection{4.8 Results Summary}\label{results-summary}}
+
+The expanded evidence establishes five main points. First, simple-score membership signal was model-family dependent in the tested tabular grid. Second, target predictive accuracy alone did not explain the pattern; train/non-member gaps and saturated tree scores were more informative for the strongest simple-score results. Third, AUC and low-FPR TPR answered different audit questions, so global discrimination should not be used as a substitute for tail operating behavior. Fourth, TPR@0.1\%FPR interpretation depended directly on the non-member audit budget and required explicit tail-resolution warnings. Fifth, the score-array protocol packages the required reporting fields: score definition, \(n_M/n_N\), threshold/tie behavior, intervals, audit-size sensitivity, false-positive budget, diagnostics, reproducibility path, and scope boundary; the bounded shadow-model, tie-rule, split/seed, and label-uncertainty checks show why those fields remain useful outside the main fixed-score grid.
+
+\hypertarget{discussion}{%
+\section{5. Discussion}\label{discussion}}
+
+This study identifies finite-sample low-FPR reliability as a reporting problem for membership inference audits. The central result is not simply that some simple scores expose membership signal in some target models. It is that the interpretation of a reported tail metric depends on the finite member and non-member samples used to select the threshold and estimate TPR. A privacy audit that reports TPR@0.1\%FPR without \(n_N\), interval method, threshold behavior, and false-positive budget can make a low-resolution tail estimate look like a stable attack property.
+
+The empirical grid supports this interpretation in two steps. ExtraTrees and Random Forest produced the strongest simple-score signals in the tested tabular settings, while logistic regression, HistGradientBoosting, and small MLP were near random or weakly above random under the evaluated scores. Yet AUC and low-FPR TPR separated: several Random Forest settings had above-random AUC but very small TPR@0.1\%FPR, whereas some ExtraTrees settings showed high low-FPR TPR with visibly wider tail intervals. The audit conclusion therefore depends on the operating point, not only on global ranking quality.
+
+The practical rule is correspondingly narrow. Low-FPR MIA reports should state member and non-member audit sizes, report AUC separately from TPR@1\%FPR and TPR@0.1\%FPR, identify threshold and tie handling, provide uncertainty intervals, and flag expected false-positive budgets below useful resolution. This rule is not a claim that the evaluated simple attacks are state of the art. It is a reporting requirement for any supplied member/non-member score arrays when the reader is asked to interpret a low-FPR tail metric.
+
+The reporting-practice mini audit suggests that this rule is not merely editorial preference. In the sampled core MIA papers, low-FPR evaluation and thresholded metrics were visible, but the full package of interval reporting, audit-size sensitivity, tie or boundary handling, and false-positive-budget warnings was absent. Because the audit is intentionally bounded, the claim is modest: representative papers motivating this study leave room for a reusable reporting layer.
+
+\hypertarget{low-fpr-metrics-as-audit-estimates}{%
+\subsection{5.1 Low-FPR Metrics as Audit Estimates}\label{low-fpr-metrics-as-audit-estimates}}
+
+Low-FPR MIA metrics are often read as if they are stable properties of an attack. The present results indicate that they are better understood as finite-sample audit estimates. A threshold for TPR@1\%FPR or TPR@0.1\%FPR is selected from the non-member score tail, and the corresponding TPR is estimated from the member score distribution. Both steps depend on the available audit sample.
+
+This interpretation clarifies why the paper reports several uncertainty views rather than one preferred interval. Stratified bootstrap intervals resample the member and non-member score arrays and therefore reflect variation in threshold selection and metric estimation. Fixed-threshold Wilson intervals answer a narrower conditional question after the threshold and tie rule have been selected. Repeated balanced audit subsampling shows how estimates and interval widths change when only smaller balanced audit samples are available. Tail-resolution warnings add a simple diagnostic for whether the requested FPR is supported by enough expected false positives to make the estimate interpretable.
+
+The distinction also explains why AUC and low-FPR TPR should be reported together. AUC summarizes ranking quality over the full score distribution. TPR@1\%FPR and TPR@0.1\%FPR ask whether the score separates members in the extreme non-member tail. These are different audit questions. A model can have an AUC clearly above random while still yielding a near-baseline TPR at 0.1\% FPR. A high AUC should therefore not be translated into a strong low-FPR audit conclusion without checking the tail.
+
+\hypertarget{model-family-dependence-and-rival-explanations}{%
+\subsection{5.2 Model-family Dependence and Rival Explanations}\label{model-family-dependence-and-rival-explanations}}
+
+The observed model-family pattern is consistent with the view that simple-score membership signal is linked to target-model behavior, including train/non-member gaps, rather than target predictive accuracy alone. HistGradientBoosting often improved non-member accuracy relative to logistic regression while remaining close to random under the evaluated simple MIA scores. Random Forest and ExtraTrees, by contrast, showed stronger membership signal in several datasets, especially where training performance was much higher than non-member performance.
+
+This interpretation has limits. The results do not show that tree ensembles are universally more vulnerable, and they do not show that logistic regression, HistGradientBoosting, or small MLP are privacy-safe. They show that, in this controlled tabular grid and under the four simple score-based MIAs evaluated here, the strongest observed simple-score signal was concentrated in tree ensembles. A different attack family, calibration procedure, model class, dataset, or training regime could change this ranking.
+
+ExtraTrees deserves particular caution because its strongest results were tied to saturated training-set predictions. The sanity check found no member/non-member index overlap, retained ID-like feature, non-finite score, or one-score anomaly, which reduces the concern that the high AUC values are caused by a simple pipeline flaw. The same check showed that ExtraTrees often assigned nearly maximal member-like scores to training records, while non-member scores were less saturated. This pattern is consistent with strong train-pool fit under the controlled split. We interpret it as evidence that simple-score leakage can become large in some tree-ensemble settings, not as a universal claim about ExtraTrees or a formal comparison against other model families.
+
+\hypertarget{relationship-to-attack-design-and-prior-work}{%
+\subsection{5.3 Relationship to Attack Design and Prior Work}\label{relationship-to-attack-design-and-prior-work}}
+
+The paper is complementary to stronger attacks and to recent MIA-reliability work. LiRA, RMIA, difficulty calibration, and ensemble-style privacy-tool studies address how membership evidence is produced, calibrated, or combined \cite{ref-3,ref-4,ref-5,ref-15}. Jälkö et al.~address reliability problems in efficient low-FPR MIA evaluation, including per-sample FPR calibration and efficient-LiRA bias \cite{ref-12}. The present protocol sits after these choices: their scores, once exported as member/non-member arrays under a stated aggregation protocol, could be audited with the same reporting layer.
+
+This boundary is the novelty claim and the limitation at the same time. Prior low-FPR MIA work motivates why tail operating points matter, practical MIA critiques motivate why false positives can dominate real-world interpretation, and recent efficient-evaluation work shows that score aggregation itself can be miscalibrated. The present contribution is the post-score estimand and reporting protocol that connects those concerns to explicit uncertainty, threshold/tie behavior, audit-sample sensitivity, and tail-resolution diagnostics. The individual statistical tools are not new; the paper-level contribution is to adapt and assemble them into a reusable low-FPR MIA reporting layer, define the required audit fields, and empirically show why omitting those fields changes the interpretation of score-based MIA results.
+
+The same boundary applies to calibration and reference-model scoring. Probability calibration, sample-difficulty calibration, per-sample FPR calibration, shadow-model likelihood ratios, and finite-population corrections may change the attack scores that enter an audit. They do not remove the need to report uncertainty around low-FPR estimates after scores are produced. In the reference-centered appendix, reference-centered scores changed AUC and TPR@1\%FPR, yet the TPR@0.1\%FPR intervals and tail-resolution warnings remained central to interpretation (\protect\hyperlink{appendix-f-reference-centered-score-check}{Appendix F}). In the bounded shadow-model appendix, a weaker likelihood-ratio-style score array still passed through the same threshold, interval, and tail-budget reporting layer (\protect\hyperlink{appendix-h-bounded-shadow-model-score-check}{Appendix H}). This is why the manuscript treats attack-design and calibrated-aggregation methods as possible score producers for the reporting layer, not as competitors that the reporting layer outperforms.
+
+\hypertarget{practical-reporting-implications}{%
+\subsection{5.4 Practical Reporting Implications}\label{practical-reporting-implications}}
+
+The reusable audit tool turns these interpretation rules into a repeatable reporting protocol. A user supplies member/non-member score arrays, and the tool returns point metrics, stratified bootstrap intervals, fixed-threshold Wilson intervals, repeated balanced audit-subsampling summaries, tail-resolution warnings, and diagnostic figures. This makes the audit-reporting layer reusable after score generation, conditional on supplied member/non-member arrays and a stated aggregation protocol.
+
+The practical reporting template that follows from the results is simple. A low-FPR MIA audit should state the member and non-member audit-sample sizes, report AUC separately from TPR@1\%FPR and TPR@0.1\%FPR, include uncertainty intervals, identify the interval method, and flag low expected false-positive budgets. When sample-size sensitivity is material, the audit should show how the metric changes as the available member/non-member sample grows. This template does not make an attack stronger, but it makes its reported performance harder to overinterpret: a reader can distinguish a strong low-FPR signal from a point estimate whose requested tail contains only one or two expected false positives.
+
+The sensitivity checks give small realism checks for the same template. Tie-rule sensitivity shows that strict, randomized, and inclusive threshold conventions can imply very different low-FPR TPR values when scores pile up at the operating threshold (\protect\hyperlink{appendix-i-tie-rule-sensitivity}{Appendix I}). Split/seed sensitivity shows that target construction can change tail metrics even when the overall model-family pattern is stable (\protect\hyperlink{appendix-j-splitseed-sensitivity}{Appendix J}). When up to 5\% of audit membership labels were symmetrically corrupted in the Credit Default random-forest negative-loss audit, the point estimates declined but the reporting workflow still exposed the changed estimates, intervals, and tail-budget warnings (\protect\hyperlink{appendix-g-label-uncertainty-check}{Appendix G}). Real audits can be more complicated than these bounded perturbations, but the checks support the practical point: threshold rules, target-construction seeds, audit labels, sample sizes, and false-positive budgets are part of the reported result, not nuisance details to omit.
+
+The same workflow can support reproducibility. Because the tool operates on score arrays, independent researchers can rerun the reporting layer without retraining target models if scores are shared. The clean-environment reproducibility check validates this path for the audit examples by reproducing matching compressed-array and tabular AUC snapshots. This is useful when target training is expensive, private, or implementation-specific, while the evaluation of reported metrics should remain transparent.
+
+\hypertarget{limitations}{%
+\section{6. Limitations}\label{limitations}}
+
+The main empirical limitation is the attack scope. The main grid evaluates four simple score-based MIAs: negative loss, confidence, negative entropy, and negative modified prediction entropy. Bounded reference-centered and shadow-model appendices supply non-main-grid score arrays for two random-forest tabular settings and confirm that the audit tool can report them, but they are not a full LiRA, RMIA, or difficulty-calibrated benchmark. They also do not correct upstream score-aggregation issues such as heterogeneous per-sample FPRs or efficient-LiRA finite-population bias. The Results should therefore not be read as a ranking against state-of-the-art attacks.
+
+The dataset and model scope is also bounded. The expanded grid covers five public tabular datasets and five scikit-learn-compatible target-model families. It does not study image models, language models, generative models, large-scale web data, or production systems. The tabular findings therefore support a tabular audit-reporting claim, not a universal claim about all membership inference settings.
+
+The member/non-member labels are controlled by the experimental split. This makes the audit setting reproducible, but it is simpler than many real audits. A bounded check simulated up to 5\% symmetric member/non-member label corruption and found that point estimates degraded while interval and tail-budget reporting remained useful. This does not establish production audit readiness. Production audits may face uncertain membership labels with structured error, population mismatch, skewed priors, duplicated or correlated records, adversarial label errors, and restricted access to target-model outputs. These factors can change both the attack scores and the interpretation of false positives.
+
+The interval and sensitivity analyses are descriptive audit-reporting tools rather than full coverage guarantees. The percentile bootstrap intervals are nominal 95\% intervals conditional on the observed score-array-generating design and on exchangeability within the observed member/non-member audit pools; we did not run a repeated-data-generating-process simulation to verify empirical coverage. Fixed-threshold Wilson intervals are narrower Wilson-style conditional diagnostics after the threshold and tie fraction have already been selected, and fractional tie counts should not be read as exact binomial coverage guarantees. Repeated balanced subsampling uses 50 draws at each audit size from fixed score arrays, so it describes sensitivity to smaller audit pools and tail budgets, not retraining variability or split-to-split uncertainty. The separate split/seed appendix reruns a small set of target-construction settings, but it is a combined five-seed sensitivity check rather than a full factorial or repeated-data-generating-process study. These diagnostics are not a substitute for collecting more non-member records when the target FPR is extremely low.
+
+The selected final bootstrap analysis covers main-table candidate rows, not every score/metric combination in the full expanded appendix grid. The full first-pass output remains useful for pattern discovery and appendix exploration. We therefore label first-pass 50-bootstrap intervals separately from final 1,000-bootstrap intervals (\protect\hyperlink{appendix-c-final-bootstrap-boundary}{Appendix C}). The selected 1,000-bootstrap analysis is conditional on the score-row selection rule and is not a selective-inference correction.
+
+This boundary also affects how appendix evidence should be read. The selected 1000-bootstrap analysis supports the main-table rows used for the central claims, but the full 500-row grid remains a first-pass appendix resource unless separately recomputed. This is a reporting decision rather than a statistical shortcut: the main text relies on final-bootstrap rows for its strongest claims, while the full grid documents exploratory coverage across all score and metric combinations.
+
+The Results use descriptive, interval-supported comparisons rather than formal pairwise testing. This is appropriate for the paper's audit-reporting claim, but it does not support statements that one model family or attack score is statistically superior to another. Ranking claims would require a paired comparison plan with predefined comparisons, shared resampling where valid, and multiplicity-aware interpretation.
+
+Finally, the score-array audit workflow is an evaluation procedure, not a privacy guarantee. It can make reporting more transparent, but it cannot determine whether a deployed system is safe without a well-defined audit population, access model, membership prior, and acceptable false-positive tradeoff. It is therefore part of a broader audit design rather than a standalone certificate of privacy risk.
+
+A related limitation is that the workflow is conditional on the supplied score arrays and aggregation protocol. If scores are pooled across samples or target models, upstream checks such as per-sample FPR calibration may be needed before the reporting layer is applied \cite{ref-12}. If target and shadow models are recycled from a finite superset, finite-population-bias checks may also be needed. The present workflow reports uncertainty, thresholds, ties, sample-size sensitivity, and tail budgets after scores are supplied; it does not certify that the score-construction stage is already calibrated.
+
+\hypertarget{future-work}{%
+\section{7. Future Work}\label{future-work}}
+
+The most direct extension is to apply the same audit workflow to formal LiRA, RMIA, shadow-model, and difficulty-calibrated score arrays across predefined settings. The bounded reference-centered and shadow-model appendices show that such arrays can be passed through the workflow, but a serious attack-comparison study would need its own protocol for reference populations, shadow-model counts, tuning budgets, and comparison claims. For efficient LiRA-style score grids, such a study should incorporate per-sample FPR calibration and finite-population-bias checks before applying the present score-array reporting layer \cite{ref-12}. The goal should remain reporting behavior unless a separate attack-comparison study is explicitly designed.
+
+Calibration is another natural extension. Predictive probability calibration or sample-difficulty calibration could change loss, confidence, and entropy-style scores, and the audit workflow could quantify whether such changes improve low-FPR reporting stability. This should be added only if it clarifies the main audit-reliability argument rather than becoming a separate calibration paper.
+
+Future empirical work should also test non-tabular domains and more realistic audit conditions. Language-model membership, generative-model membership, and production audit settings may introduce different score distributions, priors, label uncertainty patterns, and access constraints. The label-uncertainty supplement covers only a simple symmetric perturbation; future work should study population mismatch, correlated records, structured or adversarial membership-label error, and deployment-specific priors. The score-array design makes these extensions possible, but the current evidence does not establish them.
+
+\hypertarget{conclusion}{%
+\section{8. Conclusion}\label{conclusion}}
+
+This paper addresses a reporting problem in membership inference attack (MIA) evaluation: low-FPR attack performance is often presented as a stable point estimate, although it is estimated from finite member and non-member audit samples. We identified finite-sample low-FPR reliability as a distinct post-score audit-reporting problem and implemented a score-array protocol that reports point metrics, stratified bootstrap intervals, fixed-threshold Wilson diagnostics, repeated balanced audit-subsampling summaries, threshold/tie behavior, and tail-resolution warnings from supplied member/non-member score arrays.
+
+Across five public tabular datasets and five scikit-learn-compatible target-model families, the results show that simple-score membership signal is model-family dependent and that AUC and low-FPR TPR answer separate audit questions. Tree ensembles produced the strongest observed simple-score signal in this grid, while several other model families were near random or only weakly above random under the evaluated scores. More importantly for audit practice, the low-FPR results show that non-member sample size and expected false-positive budget are part of the reported result, not background implementation details.
+
+The practical implication is that MIA audits should report more than attack point estimates. A low-FPR audit should disclose member and non-member audit-sample sizes, report uncertainty intervals, identify how thresholds and ties are handled, and flag tail-resolution limits when expected false-positive counts are small. The bounded reporting-practice mini audit supports the need for this protocol, and the score-array audit tool makes the reporting layer reusable for simple scores and for other supplied score arrays once member/non-member arrays are available under a stated audit design.
+
+The current evidence remains bounded. The main experiments use simple score-based MIAs on public tabular datasets and scikit-learn-compatible target models. The reference-centered and bounded shadow-model appendices demonstrate that non-main-grid score arrays can be passed through the same reporting protocol, and the tie-rule, split/seed, and label-uncertainty supplements show that low-FPR readings can change under reporting-rule or audit-design perturbations without removing the need for intervals and tail warnings. These additions support the reporting claim, but they do not establish a new attack, a LiRA/RMIA benchmark, a ranking among attack families, a correction for efficient-LiRA aggregation bias, language-model membership conclusions, or production privacy-audit guarantees.
+
+\hypertarget{data-and-code-availability}{%
+\section{Data and Code Availability}\label{data-and-code-availability}}
+
+This study used only publicly available tabular datasets. Default of Credit Card Clients, Adult/Census Income, Forest Covertype, Bank Marketing, and Diabetes 130-US Hospitals are available from the UCI Machine Learning Repository, with Forest Covertype also loaded through the scikit-learn dataset interface \cite{ref-25,ref-26,ref-27,ref-28,ref-29,ref-30}. Raw third-party datasets should be obtained and cited through their source repositories. The project does not claim a new licence over those raw datasets.
+
+Processed arrays, deterministic member/non-member split files, attack-score arrays, metric tables, confidence-interval tables, audit-subsampling outputs, appendix tables, figure source data, and project-authored code for preprocessing, model training, score extraction, score-array auditing, final interval hardening, and figure/table generation are archived in the Zenodo reproducibility package at \url{https://doi.org/10.5281/zenodo.20552369}. The archive excludes large trained-model cache files; these files are regenerable from the documented commands, seeds, parameters, and output paths. Project-authored code is released under the MIT License, and project-authored generated figures, tables, manifests, and documentation are released under CC BY 4.0 in the archive. No new licence is claimed over third-party raw dataset content.
+
+The reproducibility package documents the main rerun paths, dependency notes, smoke tests, output manifests, and commands for the reference-centered score compatibility check, bounded shadow-model score check, tie-rule sensitivity check, split/seed sensitivity check, and label-uncertainty check. The current arXiv source package contains only the manuscript and figure assets needed to build the paper; the Zenodo record is the archival data/code artifact.
+
+\begin{thebibliography}{99}
+
+\bibitem{ref-1}
+Shokri, R., Stronati, M., Song, C. and Shmatikov, V.
+Membership inference attacks against machine learning models.
+In \emph{2017 IEEE Symposium on Security and Privacy}.
+doi:10.1109/SP.2017.41 (2017).
+
+\bibitem{ref-2}
+Yeom, S., Giacomelli, I., Fredrikson, M. and Jha, S.
+Privacy risk in machine learning: analyzing the connection to overfitting.
+In \emph{2018 IEEE Computer Security Foundations Symposium}.
+doi:10.1109/CSF.2018.00027 (2018).
+
+\bibitem{ref-3}
+Carlini, N. et al.
+Membership inference attacks from first principles.
+In \emph{2022 IEEE Symposium on Security and Privacy}.
+doi:10.1109/SP46214.2022.9833649 (2022).
+
+\bibitem{ref-4}
+Watson, L., Guo, C., Cormode, G. and Sablayrolles, A.
+On the importance of difficulty calibration in membership inference attacks.
+\emph{International Conference on Learning Representations}; arXiv:2111.08440.
+doi:10.48550/arXiv.2111.08440 (2022).
+
+\bibitem{ref-5}
+Zarifzadeh, S., Liu, P. and Shokri, R.
+Low-cost high-power membership inference attacks.
+\emph{Proceedings of the 41st International Conference on Machine Learning}, PMLR 235, 58244-58282; arXiv:2312.03262.
+doi:10.48550/arXiv.2312.03262 (2024).
+
+\bibitem{ref-6}
+Rezaei, S. and Liu, X.
+On the difficulty of membership inference attacks.
+In \emph{2021 IEEE/CVF Conference on Computer Vision and Pattern Recognition}.
+doi:10.1109/CVPR46437.\allowbreak{}2021.00780 (2021).
+
+\bibitem{ref-7}
+Dionysiou, A. and Athanasopoulos, E.
+SoK: membership inference is harder than previously thought.
+\emph{Proceedings on Privacy Enhancing Technologies}.
+doi:10.56553/popets-2023-0082 (2023).
+
+\bibitem{ref-8}
+Jebreel, N., Khalil, I., Sanchez, D. and Domingo-Ferrer, J.
+Revisiting the LiRA membership inference attack under realistic assumptions.
+Preprint at https://doi.org/10.48550/\allowbreak{}arXiv.2603.07567 (2026).
+
+\bibitem{ref-9}
+Brown, L. D., Cai, T. T. and DasGupta, A.
+Interval estimation for a binomial proportion.
+\emph{Statistical Science}.
+doi:10.1214/ss/1009213286 (2001).
+
+\bibitem{ref-10}
+McGrath, S. and Burke, K.
+Binomial confidence intervals for rare events.
+\emph{The American Statistician}.
+doi:10.1080/00031305.2024.2350445 (2024).
+
+\bibitem{ref-11}
+Guo, C., Pleiss, G., Sun, Y. and Weinberger, K. Q.
+On calibration of modern neural networks.
+\emph{Proceedings of the 34th International Conference on Machine Learning}, PMLR 70, 1321-1330; arXiv:1706.04599.
+doi:10.48550/arXiv.1706.04599 (2017).
+
+\bibitem{ref-12}
+Jälkö, J., Pradhan, G., Räisä, O. and Honkela, A.
+On reliability of efficient membership inference vulnerability evaluation.
+Preprint at https://doi.org/10.48550/\allowbreak{}arXiv.2605.25819 (2026).
+
+\bibitem{ref-13}
+Salem, A., Zhang, Y., Humbert, M., Berrang, P., Fritz, M. and Backes, M.
+ML-Leaks: model and data independent membership inference attacks and defenses on machine learning models.
+In \emph{26th Annual Network and Distributed System Security Symposium}.
+doi:10.14722/ndss.2019.23119 (2019).
+
+\bibitem{ref-14}
+Leemann, T., Pawelczyk, M. and Kasneci, G.
+Gaussian membership inference privacy.
+Preprint at https://doi.org/10.48550/\allowbreak{}arXiv.2306.07273 (2023).
+
+\bibitem{ref-15}
+Wang, Z., Zhang, C., Chen, Y., Baracaldo, N., Kadhe, S. and Yu, L.
+Membership inference attacks as privacy tools: reliability, disparity and ensemble.
+Preprint at https://doi.org/10.48550/\allowbreak{}arXiv.2506.13972 (2025).
+
+\bibitem{ref-16}
+Haghifam, M., Smith, A. and Ullman, J.
+The sample complexity of membership inference and privacy auditing.
+Preprint at https://doi.org/10.48550/\allowbreak{}arXiv.2508.19458 (2025).
+
+\bibitem{ref-17}
+Chen, D., Cheng, X., Zhong, X., Chen, X., Huang, X. and Liu, C.
+A full-pipeline framework for evaluating membership inference attacks in machine learning.
+Preprint at https://doi.org/10.48550/\allowbreak{}arXiv.2605.29454 (2026).
+
+\bibitem{ref-18}
+Murakonda, S. K. and Shokri, R.
+ML Privacy Meter: aiding regulatory compliance by quantifying the privacy risks of machine learning.
+\emph{Workshop on Hot Topics in Privacy Enhancing Technologies} (2020).
+
+\bibitem{ref-19}
+Zhao, C., Qian, W., Chen, A. and Huai, M.
+Membership inference attacks with false discovery rate control.
+In \emph{Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)}, 1216--1227 (2025).
+
+\bibitem{ref-20}
+Song, C. and Shmatikov, V.
+Auditing data provenance in text-generation models.
+In \emph{Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery \& Data Mining}, 196--206.
+doi:10.1145/3292500.3330885 (2019).
+
+\bibitem{ref-21}
+Chen, Z. and Pattabiraman, K.
+Anonymity unveiled: a practical framework for auditing data use in deep learning models.
+In \emph{Proceedings of the 2025 ACM SIGSAC Conference on Computer and Communications Security}, 513--527.
+doi:10.1145/3719027.3744794 (2025).
+
+\bibitem{ref-22}
+Zhang, J., Das, D., Kamath, G. and Tram{\`e}r, F.
+Position: membership inference attacks cannot prove that a model was trained on your data.
+In \emph{2025 IEEE Conference on Secure and Trustworthy Machine Learning (SaTML)}, 333--345.
+doi:10.1109/SaTML64287.2025.00025 (2025).
+
+\bibitem{ref-23}
+Jim{\'e}nez-L{\'o}pez, D., Rodr{\'i}guez-Barroso, N., Luz{\'o}n, M. V., Del Ser, J. and Herrera, F.
+Membership inference attacks fueled by few-shot learning to detect privacy leakage and address data integrity.
+\emph{Machine Learning and Knowledge Extraction} \textbf{7}, 43.
+doi:10.3390/make7020043 (2025).
+
+\bibitem{ref-24}
+Song, L. and Mittal, P.
+Systematic evaluation of privacy risks of machine learning models.
+In \emph{30th USENIX Security Symposium (USENIX Security 21)}, 2615--2632 (USENIX Association, 2021).
+
+\bibitem{ref-25}
+Pedregosa, F. et al.
+Scikit-learn: machine learning in Python.
+\emph{Journal of Machine Learning Research} \textbf{12}, 2825--2830 (2011).
+
+\bibitem{ref-26}
+Yeh, I.-C.
+Default of Credit Card Clients [Dataset].
+\emph{UCI Machine Learning Repository}.
+doi:10.24432/C55S3H (2009).
+
+\bibitem{ref-27}
+Becker, B. and Kohavi, R.
+Adult [Dataset].
+\emph{UCI Machine Learning Repository}.
+doi:10.24432/C5XW20 (1996).
+
+\bibitem{ref-28}
+Blackard, J.
+Covertype [Dataset].
+\emph{UCI Machine Learning Repository}.
+doi:10.24432/C50K5N (1998).
+
+\bibitem{ref-29}
+Moro, S., Rita, P. and Cortez, P.
+Bank Marketing [Dataset].
+\emph{UCI Machine Learning Repository}.
+doi:10.24432/C5K306 (2014).
+
+\bibitem{ref-30}
+Clore, J., Cios, K., DeShazo, J. and Strack, B.
+Diabetes 130-US Hospitals for Years 1999--2008 [Dataset].
+\emph{UCI Machine Learning Repository}.
+doi:10.24432/C5230J (2014).
+
+\bibitem{ref-31}
+Breiman, L.
+Random forests.
+\emph{Machine Learning} \textbf{45}, 5--32.
+doi:10.1023/A:1010933404324 (2001).
+
+\bibitem{ref-32}
+Geurts, P., Ernst, D. and Wehenkel, L.
+Extremely randomized trees.
+\emph{Machine Learning} \textbf{63}, 3--42.
+doi:10.1007/s10994-006-6226-1 (2006).
+
+\bibitem{ref-33}
+Friedman, J. H.
+Greedy function approximation: a gradient boosting machine.
+\emph{The Annals of Statistics} \textbf{29}, 1189--1232.
+doi:10.1214/aos/1013203451 (2001).
+
+\bibitem{ref-34}
+Efron, B. and Tibshirani, R. J.
+\emph{An Introduction to the Bootstrap}.
+Monographs on Statistics and Applied Probability 57 (Chapman \& Hall/CRC, 1993).
+
+\bibitem{ref-35}
+Ertan, M. B., B{\"o}ge, E., Chen, M., Mahmood, K. and van Dijk, M.
+On the evidentiary limits of membership inference for copyright auditing.
+Preprint at https://doi.org/10.48550/\allowbreak{}arXiv.2601.12937 (2026).
+
+\end{thebibliography}
+
+\newpage
+
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+  {-1.35ex \@plus -.35ex \@minus -.2ex}%
+  {0.65ex \@plus .2ex}%
+  {\normalfont\large\bfseries}}
+\makeatother
+
+\setcounter{table}{0}
+\renewcommand{\thetable}{A\arabic{table}}
+\renewcommand{\theHtable}{appendix.\arabic{table}}
+\setcounter{figure}{0}
+\renewcommand{\thefigure}{A\arabic{figure}}
+\renewcommand{\theHfigure}{appendix.\arabic{figure}}
+
+\hypertarget{appendix-a-reporting-practice-mini-audit}{%
+\section{Appendix A. Reporting-practice audit}\label{appendix-a-reporting-practice-mini-audit}}
+
+The reporting-practice audit is a bounded positioning check, not a systematic review. It covers 10 core MIA, low-FPR, and realism papers, one direct MIA-evaluation reliability paper, two adjacent unlearning-audit papers, and three statistical or calibration context papers. The core/direct-reliability denominator is used only to support the manuscript's narrow claim: thresholded and low-FPR metrics, false-positive concerns, and reliability issues are commonly discussed, but the sampled core/direct-reliability papers do not package low-FPR intervals, audit-size sensitivity, tie or boundary handling, and false-positive-budget warnings as a reusable score-array reporting protocol.
+
+For the 11 core/direct-reliability rows, audit sample sizes and thresholds were usually present only partially; low-FPR uncertainty intervals were absent in all 11; audit-size or model-count sensitivity appeared only in the direct reliability row; false-positive caution was present in eight but not translated into the reporting package used here; and no row reported all six fields as a reusable score-array reporting package. Adjacent statistical and unlearning-audit work shows that interval and audit-sample ideas exist, but it does not replace a generic MIA score-array reporting layer.
+
+The audit therefore supports the following bounded conclusion: representative papers motivating this study leave room for a reusable finite-sample reporting layer around supplied member/non-member score arrays. It should not be cited as evidence about prevalence across the whole MIA literature.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Bounded reporting-practice mini-audit counts for 11 core/direct MIA reliability papers. `Y' means the field is explicitly reported for the audited purpose, `P' means partial or adjacent reporting, and `N' means not found for that purpose.}
+\label{tab:appendix-reporting-audit-counts}
+\begin{tabularx}{\columnwidth}{Y r r r}
+\toprule
+Reporting field & Y & P & N \\
+\midrule
+Audit sample sizes & 0 & 11 & 0 \\
+Low-FPR uncertainty interval & 0 & 0 & 11 \\
+Threshold / tie handling & 0 & 11 & 0 \\
+Sample-size sensitivity & 1 & 0 & 10 \\
+False-positive-budget warnings & 0 & 8 & 3 \\
+Reusable reporting protocol & 0 & 4 & 7 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The printed evidence trail is limited to the 11 core/direct-reliability rows used for the denominator. Columns are Size=audit sample sizes, CI=low-FPR interval, Th.=threshold/tie handling, Sens.=sample-size sensitivity, FP=false-positive-budget warning, and Prot.=reusable protocol. Rows not already cited in the main text include Salem et al.~\cite{ref-13} and Leemann et al.~\cite{ref-14}. Detailed coding notes are retained in the reproducibility package.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Core and direct-reliability MIA mini-audit coding matrix.}
+\label{tab:appendix-reporting-audit-matrix}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l c c c c c c@{}}
+\toprule
+Paper & Size & CI & Th. & Sens. & FP & Prot. \\
+\midrule
+Shokri17 & P & N & P & N & N & N \\
+Yeom18 & P & N & P & N & N & N \\
+Salem19 & P & N & P & N & N & P \\
+Carlini22 & P & N & P & N & P & N \\
+Watson22 & P & N & P & N & P & N \\
+Rezaei21 & P & N & P & N & P & N \\
+Zarifzadeh24 & P & N & P & N & P & P \\
+Leemann23 & P & N & P & N & P & N \\
+Dionysiou23 & P & N & P & N & P & N \\
+Jebreel26 & P & N & P & N & P & P \\
+Jälkö26 & P & N & P & Y & P & P \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\hypertarget{appendix-b-supplementary-output-index}{%
+\section{Appendix B. Supplementary output index}\label{appendix-b-supplementary-output-index}}
+
+The expanded tabular analysis produced a full grid of point metrics, first-pass intervals, and audit-size sensitivity outputs. The PDF reports compact summaries only. Complete row-level outputs remain in machine-readable tables because several outputs are too large or too detailed for a readable paper appendix.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Supplementary output index for the expanded tabular analysis.}
+\label{tab:appendix-csv-manifest}
+\begin{tabular}{l r l}
+\toprule
+Output ID & Rows & Role \\
+\midrule
+A1 main metrics & 500 & Point metrics \\
+A2 first-pass intervals & 500 & 50-bootstrap CIs \\
+A3 final intervals & 111 & 1,000-bootstrap CIs \\
+A4 first vs final CIs & 111 & CI-width comparison \\
+A5 size sensitivity & 2,500 & Aggregated subsampling \\
+A6 size repeats & 125,000 & Repeat-level rows \\
+A7 size skipped & 0 & Skipped requests \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Additional support outputs for later appendix checks are indexed here because they are not part of the A1-A7 compact index.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Supporting result outputs for supplemental checks.}
+\label{tab:appendix-support-output-index}
+\begin{tabularx}{\columnwidth}{l r Y}
+\toprule
+Output & Rows & Check \\
+\midrule
+ET gap and split checks & 5+5 & ExtraTrees sanity \\
+ET score diagnostics & 20 & ExtraTrees sanity \\
+Reference-centered metrics & 12+12 & Reference-centered compatibility check \\
+Label summary metrics & 25 & Label-uncertainty check \\
+Label repeat rows & 5,000 & Label-uncertainty check \\
+Shadow score metrics & 4 & Bounded shadow-model score check \\
+Tie-rule sensitivity & 8 & Tie-rule check \\
+Split/seed sensitivity & 45+9 & Per-seed metrics and metric summaries \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The following table gives a printed slice of the full point-metric grid. The rows were selected to span near-random, intermediate, and high-signal settings while keeping the table readable in one column. Codes used below: CD=Credit Default, Cov=Covertype, Diab=Diabetes Readmission, LR=logistic regression, RF=Random Forest, ET=ExtraTrees, NL=negative loss, and NE=negative entropy.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Representative best-AUC score rows from the expanded point-metric grid.}
+\label{tab:appendix-selected-point-rows}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}l l r r r r r@{}}
+\toprule
+Set & Score & AUC & TPR1 & TPR0.1 & Tie0.1 & $n_N$ \\
+\midrule
+CD/LR & NL & 0.4967 & 0.0088 & 0.0005 & 1.000 & 15,000 \\
+CD/RF & NL & 0.7584 & 0.0487 & 0.0051 & 0.349 & 15,000 \\
+CD/ET & NL & 0.9977 & 0.9988 & 0.3654 & 0.366 & 15,000 \\
+Cov/RF & NE & 0.6996 & 0.0315 & 0.0031 & 0.032 & 290,506 \\
+Cov/ET & NL & 0.9769 & 0.2162 & 0.0216 & 0.022 & 290,506 \\
+Adult/RF & NL & 0.6286 & 0.0141 & 0.0014 & 0.005 & 24,421 \\
+Adult/ET & NL & 0.8697 & 0.0384 & 0.0038 & 0.004 & 24,421 \\
+Bank/RF & NL & 0.6597 & 0.0250 & 0.0025 & 0.015 & 20,594 \\
+Bank/ET & NL & 0.8807 & 0.0437 & 0.0044 & 0.004 & 20,594 \\
+Diab/RF & NL & 0.7990 & 0.1158 & 0.0126 & 0.795 & 50,883 \\
+Diab/ET & NL & 0.9982 & 1.0000 & 0.2780 & 0.278 & 50,883 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\hypertarget{appendix-c-final-bootstrap-boundary}{%
+\section{Appendix C. Final-bootstrap boundary}\label{appendix-c-final-bootstrap-boundary}}
+
+The selected final bootstrap analysis supports the main interval claims. It selected, for each dataset/model pair, the best first-pass AUC score and the canonical negative-loss score, then recomputed AUC, TPR@1\%FPR, and TPR@0.1\%FPR intervals with 1,000 stratified bootstrap repeats. This produced 37 selected score rows and 111 confidence-interval rows.
+
+The full 500-row appendix grid remains a first-pass appendix resource unless separately recomputed. This distinction is a reporting boundary rather than a statistical shortcut. The main text uses selected 1,000-bootstrap rows for central interval claims; the full grid documents exploratory coverage across all score and metric combinations with 50-bootstrap first-pass intervals.
+
+Fixed-threshold Wilson intervals remain conditional diagnostics. They answer how much member-side binomial uncertainty remains after the observed threshold and tie fraction are fixed. They do not replace stratified bootstrap intervals, which resample both member and non-member arrays and therefore include threshold-selection variation.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Selected first-pass versus final-bootstrap interval widths.}
+\label{tab:appendix-final-bootstrap-examples}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l r r r r@{}}
+\toprule
+Set/metric & Point & First & Final & Ratio \\
+\midrule
+CD/LR TPR0.1 & 0.0005 & 0.0013 & 0.0012 & 0.91 \\
+CD/RF TPR0.1 & 0.0051 & 0.0032 & 0.0037 & 1.16 \\
+CD/ET TPR0.1 & 0.3654 & 0.2377 & 0.2392 & 1.01 \\
+Cov/ET AUC & 0.9769 & 0.0006 & 0.0007 & 1.31 \\
+Diab/RF TPR0.1 & 0.0126 & 0.0047 & 0.0064 & 1.36 \\
+Diab/ET TPR0.1 & 0.2780 & 0.0699 & 0.0786 & 1.12 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\hypertarget{appendix-d-audit-size-sensitivity-and-tail-resolution-warnings}{%
+\section{Appendix D. Audit-size warnings}\label{appendix-d-audit-size-sensitivity-and-tail-resolution-warnings}}
+
+Audit-size sensitivity uses aggregated summaries and 125,000 repeat-level subsampling rows. Tail-resolution warnings are deterministic guardrails based on the requested FPR and non-member count, with warning and severe-warning thresholds below five and below one expected false positives.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Balanced subsampling for CD/RF negative loss at TPR@0.1\%FPR, using 50 repeated balanced subsamples from fixed score arrays.}
+\label{tab:appendix-sample-size-example}
+\begin{tabularx}{\columnwidth}{r r l r l}
+\toprule
+$n$ & Mean & 95\% range & Width & Warning \\
+\midrule
+250 & 0.0155 & [0.0015, 0.0595] & 0.0580 & severe \\
+500 & 0.0075 & [0.0011, 0.0235] & 0.0225 & severe \\
+1000 & 0.0080 & [0.0019, 0.0238] & 0.0220 & warning \\
+2000 & 0.0064 & [0.0023, 0.0163] & 0.0140 & warning \\
+5000 & 0.0054 & [0.0033, 0.0081] & 0.0048 & none \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\hypertarget{appendix-e-extratrees-sanity-checks}{%
+\section{Appendix E. ExtraTrees checks}\label{appendix-e-extratrees-sanity-checks}}
+
+The ExtraTrees sanity check tested whether the strongest simple-score AUCs reflected obvious data or scoring failures. It found no index overlap, retained ID-like feature, non-finite score, or one-score anomaly; the tables instead summarize train/non-member gaps, score saturation, and exact cross-split duplicate counts. These checks do not rule out correlated-record or dataset-specific effects, so the main text treats the pattern as bounded descriptive evidence.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{ExtraTrees fit and split-integrity checks; duplicates are exact feature-row overlaps.}
+\label{tab:appendix-extratrees-fit-split}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l l l l r@{}}
+\toprule
+Data & Acc. tr/non & Loss tr/non & Ov./ID & Dup. \\
+\midrule
+CD & 0.999/0.810 & 0.0008/0.479 & 0/0 & 20 \\
+Cov & 1.000/0.944 & 0.0000/0.204 & 0/0 & 0 \\
+Adult Income & 1.000/0.830 & 0.0001/0.489 & 0/0 & 25 \\
+Bank & 0.996/0.883 & 0.0051/0.772 & 0/0 & 897 \\
+Diab & 1.000/0.889 & 0.0000/0.339 & 0/0 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{ExtraTrees score-saturation diagnostics; Max M/N is the most member-like-value fraction.}
+\label{tab:appendix-extratrees-saturation}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l r r l r@{}}
+\toprule
+Data/score & AUC & TPR0.1 & Max M/N & AUC $\geq$ .9 \\
+\midrule
+CD/ME & 0.9977 & 0.3654 & 0.999/0.003 & 4 \\
+Cov/Conf & 0.9769 & 0.0216 & 1.000/0.046 & 4 \\
+Adult/ME & 0.8697 & 0.0038 & 1.000/0.261 & 0 \\
+Bank/ME & 0.8807 & 0.0044 & 0.992/0.227 & 0 \\
+Diab/ME & 0.9982 & 0.2780 & 1.000/0.004 & 4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\hypertarget{appendix-f-reference-centered-score-check}{%
+\section{Appendix F. Reference-centered score check}\label{appendix-f-reference-centered-score-check}}
+
+The reference-centered score check asks whether the reporting workflow accepts non-main-grid score arrays once supplied. It is a workflow-reuse check, not a new attack, not a LiRA/RMIA implementation, and not an attack benchmark. Each setting used 12 reference random forests trained on stratified 50\% subsets to export three larger-is-member arrays: reference-centered negative loss, reference logit margin, and z-scored reference logit margin. These scores compare target-model evidence with out-of-reference difficulty estimates; they do not fit separate in/out shadow distributions or compute likelihood ratios.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Reference-centered score-array compatibility rows. Each bounded random-forest setting prints the simple negative-loss context row and all three exported reference-centered arrays; the table is not a LiRA/RMIA benchmark or an attack-ranking result.}
+\label{tab:reference-centered-score-appendix}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l r r r@{}}
+\toprule
+Set/score & AUC & TPR1 & TPR0.1 \\
+\midrule
+CD/RF neg loss & 0.7584 & 0.0487 & 0.0051 \\
+CD/RF ref neg loss & 0.8657 & 0.1659 & 0.0015 \\
+CD/RF ref logit & 0.9254 & 0.3307 & 0.0091 \\
+CD/RF ref z-logit & 0.9250 & 0.3739 & 0.0160 \\
+Adult/RF neg loss & 0.6286 & 0.0141 & 0.0014 \\
+Adult/RF ref neg loss & 0.7510 & 0.0887 & 0.0039 \\
+Adult/RF ref logit & 0.7365 & 0.0349 & 0.0080 \\
+Adult/RF ref z-logit & 0.7816 & 0.1604 & 0.0030 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Reference-centered score construction changed the point estimates but did not remove the low-FPR reporting problem: CD/RF z-logit had TPR@0.1\%FPR 0.0160 {[}0.0043, 0.0474{]}, while Adult/RF reference logit had 0.0080 {[}0.0046, 0.0099{]}. The methodological point is that the same audit layer reports uncertainty and tail-budget context for supplied reference-centered arrays without claiming that these arrays are state-of-the-art attacks.
+
+\hypertarget{appendix-g-label-uncertainty-check}{%
+\section{Appendix G. Label-uncertainty check}\label{appendix-g-label-uncertainty-check}}
+
+The label-uncertainty check corrupts CD/RF negative-loss audit labels symmetrically at 0\%, 0.5\%, 1\%, 2\%, and 5\%, with 200 draws per rate; it is not a production-audit simulation.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Label-corruption check metrics for CD/RF negative loss over 200 repeated symmetric corruptions per rate. Values are mean [2.5\%, 97.5\% repeated-draw range], not bootstrap confidence intervals for the canonical corrupted arrays.}
+\label{tab:label-uncertainty-appendix}
+\begin{tabularx}{\columnwidth}{r Y Y Y}
+\toprule
+Rate & AUC & TPR@1\% & TPR@0.1\% \\
+\midrule
+0\% & 0.7584 [0.7584, 0.7584] & 0.0487 [0.0487, 0.0487] & 0.0051 [0.0051, 0.0051] \\
+0.5\% & 0.7558 [0.7550, 0.7566] & 0.0478 [0.0463, 0.0490] & 0.0050 [0.0047, 0.0052] \\
+1\% & 0.7532 [0.7520, 0.7544] & 0.0468 [0.0452, 0.0482] & 0.0048 [0.0044, 0.0052] \\
+2\% & 0.7481 [0.7466, 0.7497] & 0.0452 [0.0429, 0.0478] & 0.0047 [0.0042, 0.0052] \\
+5\% & 0.7326 [0.7299, 0.7353] & 0.0401 [0.0369, 0.0433] & 0.0041 [0.0034, 0.0048] \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\hypertarget{appendix-h-bounded-shadow-model-score-check}{%
+\section{Appendix H. Bounded shadow-model score check}\label{appendix-h-bounded-shadow-model-score-check}}
+
+This appendix reports a bounded shadow-model score-array compatibility case. The score is a global Gaussian log-likelihood ratio over target-model negative loss,
+\(\log p(s_{\mathrm{target}}\mid \mathrm{shadow\ train})-\log p(s_{\mathrm{target}}\mid \mathrm{shadow\ holdout})\),
+where the train and holdout distributions are pooled across eight random-forest shadow models per dataset. It is not a full LiRA/RMIA implementation, because it does not construct per-example in/out reference distributions, tune attack hyperparameters for attack power, or implement RMIA-style offline/online ratios.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\columnwidth]{figures/flattened/q1_appendix_shadow_score_summary.png}
+\caption{Bounded shadow-score visual summary for the rows in Table~\ref{tab:appendix-shadow-score-check}; this is a readability aid, not an additional experiment or attack ranking.}
+\label{fig:appendix-shadow-score-summary}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Bounded shadow-model score-array check. The shadow-model score is weaker than the target negative-loss context row in these bounded settings; the point is score-array compatibility and transparent low-FPR reporting, not attack ranking.}
+\label{tab:appendix-shadow-score-check}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l r r r@{}}
+\toprule
+Set/score & AUC & TPR1 & TPR0.1 \\
+\midrule
+CD/RF target neg loss & 0.7584 & 0.0487 & 0.0051 \\
+CD/RF bounded shadow & 0.6254 & 0.0089 & 0.0009 \\
+Adult/RF target neg loss & 0.6286 & 0.0141 & 0.0014 \\
+Adult/RF bounded shadow & 0.6178 & 0.0120 & 0.0012 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Shadow score-distribution fits used by the bounded compatibility check. Means and standard deviations are for pooled shadow train and holdout negative-loss scores.}
+\label{tab:appendix-shadow-fit-summary}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l r l l l@{}}
+\toprule
+Dataset & Shadows & Train/holdout & Train $\mu/\sigma$ & Holdout $\mu/\sigma$ \\
+\midrule
+Credit Default & 8 & 5000/5000 & -0.116/0.118 & -0.465/0.918 \\
+Adult Income & 8 & 8000/8000 & -0.084/0.114 & -0.361/1.202 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The audit-tool outputs for the bounded shadow score used 1000 bootstrap repeats and 200 audit-size subsampling repeats. For the shadow score itself, Credit Default TPR@0.1\%FPR was 0.0009 with 95\% CI {[}0.0007, 0.0011{]}, and Adult Income TPR@0.1\%FPR was 0.0012 with 95\% CI {[}0.0010, 0.0015{]}. These near-baseline low-FPR values still require the same denominator, threshold, tie, interval, and tail-warning fields as stronger score arrays.
+
+\hypertarget{appendix-i-tie-rule-sensitivity}{%
+\section{Appendix I. Tie-rule sensitivity}\label{appendix-i-tie-rule-sensitivity}}
+
+This appendix compares strict \(s>\tau\), randomized tie-aware, and inclusive \(s\geq\tau\) operating rules for representative negative-loss rows. The threshold is selected from the non-member tail using the same quantile rule as the main workflow. The randomized tie-aware column is the manuscript's reported low-FPR estimand.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\columnwidth]{figures/flattened/q1_appendix_tie_rule_summary.png}
+\caption{Tie-rule sensitivity at TPR@0.1\%FPR, visualizing the strict, randomized, and inclusive TPR values from the 0.1\% rows of Table~\ref{tab:appendix-tie-rule-sensitivity}.}
+\label{fig:appendix-tie-rule-summary}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Low-FPR tie-rule sensitivity. Each TPR/FPR pair is reported at the same selected threshold; randomized ties include the threshold mass fraction needed to match the target FPR in expectation.}
+\label{tab:appendix-tie-rule-sensitivity}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabularx}{\columnwidth}{l r r Y Y Y}
+\toprule
+Set & FPR & Tie & Strict & Randomized & Inclusive \\
+\midrule
+CD/RF & 1\% & 0.163 & 0.0431/0.0086 & 0.0487/0.0100 & 0.0779/0.0172 \\
+CD/RF & 0.1\% & 0.349 & 0.0000/0.0000 & 0.0051/0.0010 & 0.0145/0.0029 \\
+CD/ET & 1\% & 0.744 & 0.9988/0.0055 & 0.9988/0.0100 & 0.9988/0.0115 \\
+CD/ET & 0.1\% & 0.366 & 0.0000/0.0000 & 0.3654/0.0010 & 0.9988/0.0027 \\
+Diab/RF & 1\% & 0.070 & 0.1108/0.0094 & 0.1158/0.0100 & 0.1830/0.0183 \\
+Diab/RF & 0.1\% & 0.795 & 0.0000/0.0000 & 0.0126/0.0010 & 0.0158/0.0013 \\
+Diab/ET & 1\% & 0.984 & 1.0000/0.0036 & 1.0000/0.0100 & 1.0000/0.0101 \\
+Diab/ET & 0.1\% & 0.278 & 0.0000/0.0000 & 0.2780/0.0010 & 1.0000/0.0036 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The largest strict-to-inclusive TPR width in this table is 1.0000, for Diabetes Readmission ExtraTrees at 0.1\% FPR. This does not imply that any one threshold convention is universally correct; it shows why the convention must be declared and why the manuscript treats randomized tie handling as part of the estimand.
+
+\hypertarget{appendix-j-splitseed-sensitivity}{%
+\section{Appendix J. Split/seed sensitivity}\label{appendix-j-splitseed-sensitivity}}
+
+This appendix repeats target construction for three representative negative-loss settings. Each repeat redraws a stratified 50/50 member/non-member split, uses the same integer as the target-model random seed, retrains a 200-tree target model, recomputes the member/non-member score arrays, and reports the low-FPR metrics. It is a combined split-plus-seed check, not a factorial decomposition of split and learner randomness.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\columnwidth]{figures/flattened/q1_appendix_split_seed_summary.png}
+\caption{Split/seed sensitivity over five target constructions. Points show means over seeds 20260602--20260606 and horizontal intervals show observed ranges, matching Table~\ref{tab:appendix-split-seed-sensitivity}.}
+\label{fig:appendix-split-seed-summary}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Split/seed sensitivity over five repeated target constructions. Values are mean [min, max] across seeds 20260602--20260606.}
+\label{tab:appendix-split-seed-sensitivity}
+\begin{tabularx}{\columnwidth}{l r Y Y Y}
+\toprule
+Set & Repeats & AUC & TPR@1\% & TPR@0.1\% \\
+\midrule
+CD/RF & 5 & 0.7594 [0.7547, 0.7626] & 0.0578 [0.0487, 0.0638] & 0.0063 [0.0051, 0.0068] \\
+CD/ET & 5 & 0.9977 [0.9974, 0.9980] & 0.9991 [0.9988, 0.9993] & 0.3183 [0.2457, 0.3747] \\
+Adult/RF & 5 & 0.6250 [0.6209, 0.6286] & 0.0141 [0.0137, 0.0144] & 0.0014 [0.0014, 0.0014] \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The repeated target-construction check supports the main reporting boundary. It does not replace bootstrap or audit-size sensitivity from fixed score arrays; it adds a small check that target splits and learner seeds can also be part of the audit design. The ExtraTrees row is especially sensitive at 0.1\% FPR because the operating threshold sits on saturated tied scores.
+
+\end{document}

@@ -1,0 +1,53 @@
+{
+  "arrays_dir": "05_analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/score_arrays",
+  "attack_score": "neg_loss",
+  "attack_score_subdir": "expanded_tabular_stage1/attack_scores",
+  "canonical_metrics_path": "05_analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/tables/canonical_corruption_metrics.csv",
+  "canonical_score_arrays_path": "05_analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/tables/canonical_score_arrays.csv",
+  "corruption_rates": [
+    0.0,
+    0.005,
+    0.01,
+    0.02,
+    0.05
+  ],
+  "dataset": "credit_default",
+  "generated_at": "2026-06-03T23:08:06-04:00",
+  "member_count": 15000,
+  "model": "random_forest",
+  "n_repeats": 200,
+  "nonmember_count": 15000,
+  "purpose": "Q1 one-setting audit-label uncertainty stress test.",
+  "random_state": 20260602,
+  "repeat_path": "05_analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/tables/label_uncertainty_repeats.csv",
+  "sample_sizes_for_tail_warnings": [
+    250,
+    500,
+    1000,
+    2500,
+    5000,
+    10000,
+    15000
+  ],
+  "source_metadata": {
+    "batch_size": 50000,
+    "dataset": "credit_default",
+    "generated_at": "2026-06-03T11:16:53-04:00",
+    "member_count": 15000,
+    "model": "random_forest",
+    "model_metadata_path": "05_analysis/results/expanded_tabular_stage1/models/credit_default/random_forest/metadata.json",
+    "model_subdir": "expanded_tabular_stage1/models",
+    "nonmember_count": 15000,
+    "random_state": 20260602,
+    "score_path": "05_analysis/results/expanded_tabular_stage1/attack_scores/credit_default/random_forest/attack_scores.npz",
+    "scores": {
+      "confidence": "Maximum predicted class probability; larger means more member-like.",
+      "modified_entropy": "Negative label-aware modified prediction entropy; larger means more member-like.",
+      "neg_entropy": "Negative prediction entropy; larger means sharper and more member-like.",
+      "neg_loss": "Negative per-sample cross-entropy loss; larger means more member-like."
+    },
+    "summary_path": "05_analysis/results/expanded_tabular_stage1/attack_scores/credit_default/random_forest/score_summary.csv"
+  },
+  "summary_path": "05_analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/tables/label_uncertainty_summary.csv",
+  "tail_resolution_warnings_path": "05_analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/tables/tail_resolution_warnings.csv"
+}

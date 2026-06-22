@@ -1,0 +1,28 @@
+# Local and OS files
+.DS_Store
+Thumbs.db
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# LaTeX build products
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+# Local environments and editor state
+.venv/
+venv/
+.idea/
+.vscode/
+
+# Packaged submission archives are kept on Zenodo, not in the GitHub mirror.
+arxiv_upload.zip

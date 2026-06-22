@@ -1,0 +1,6 @@
+dataset,model,attack_score,metric,point,ci_lower,ci_upper,ci_width,confidence,n_bootstrap,n_members,n_nonmembers
+credit_default,random_forest_neg_loss_label_corruption_0p000,neg_loss,AUC,0.7584220711111112,0.7531774922777779,0.7637684325555556,0.010590940277777738,0.95,1000,15000,15000
+credit_default,random_forest_neg_loss_label_corruption_0p000,neg_loss,TPR@1%FPR,0.048731782945736435,0.042183822126306225,0.05511166666666666,0.012927844540360438,0.95,1000,15000,15000
+credit_default,random_forest_neg_loss_label_corruption_0p000,neg_loss,membership_advantage@1%FPR,0.03873178294573643,0.03176119047619048,0.04581323160680201,0.01405204113061153,0.95,1000,15000,15000
+credit_default,random_forest_neg_loss_label_corruption_0p000,neg_loss,TPR@0.1%FPR,0.005069767441860465,0.0037678571428571427,0.007363712121212121,0.003595854978354978,0.95,1000,15000,15000
+credit_default,random_forest_neg_loss_label_corruption_0p000,neg_loss,membership_advantage@0.1%FPR,0.004069767441860465,0.00286745283018868,0.006125907258064516,0.003258454427875836,0.95,1000,15000,15000

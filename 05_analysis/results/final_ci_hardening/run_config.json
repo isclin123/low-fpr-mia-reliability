@@ -1,0 +1,16 @@
+{
+  "attack_score_subdir": "expanded_tabular_stage1/attack_scores",
+  "confidence": 0.95,
+  "generated_at": "2026-06-03T11:59:10-04:00",
+  "hardened_intervals_path": "05_analysis/results/final_ci_hardening/hardened_confidence_intervals.csv",
+  "n_bootstrap": 1000,
+  "output_dir": "05_analysis/results/final_ci_hardening",
+  "random_state": 20260603,
+  "run_config_path": "05_analysis/results/final_ci_hardening/run_config.json",
+  "selected_scores_path": "05_analysis/results/final_ci_hardening/selected_score_rows.csv",
+  "source_run_name": "expanded_tabular_stage1",
+  "stage1_ci_csv": "05_analysis/results/expanded_tabular_stage1/metrics/confidence_intervals.csv",
+  "stage1_comparison_path": "05_analysis/results/final_ci_hardening/stage1_vs_hardened_confidence_intervals.csv",
+  "summary_csv": "06_figures_tables/expanded/expanded_model_comparison_summary.csv",
+  "summary_path": "05_analysis/results/final_ci_hardening/hardening_summary.md"
+}

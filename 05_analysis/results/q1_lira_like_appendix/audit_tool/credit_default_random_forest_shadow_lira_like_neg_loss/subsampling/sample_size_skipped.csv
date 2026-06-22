@@ -1,0 +1,2 @@
+dataset,model,attack_score,sample_size,reason
+credit_default,random_forest_shadow_lira_like_neg_loss,shadow_lira_like_neg_loss,20000,sample_size exceeds available balanced pool 15000

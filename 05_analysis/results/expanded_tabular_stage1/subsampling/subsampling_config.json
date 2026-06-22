@@ -1,0 +1,44 @@
+{
+  "aggregate_path": "05_analysis/results/expanded_tabular_stage1/subsampling/sample_size_sensitivity.csv",
+  "attack_score_subdir": "expanded_tabular_stage1/attack_scores",
+  "datasets": [
+    "credit_default",
+    "covertype",
+    "adult_income",
+    "bank_marketing",
+    "diabetes_readmission"
+  ],
+  "generated_at": "2026-06-03T11:20:42-04:00",
+  "metrics": [
+    "AUC",
+    "TPR@1%FPR",
+    "TPR@0.1%FPR",
+    "membership_advantage@1%FPR",
+    "membership_advantage@0.1%FPR"
+  ],
+  "models": [
+    "logistic_regression",
+    "random_forest",
+    "hist_gradient_boosting",
+    "extra_trees",
+    "small_mlp"
+  ],
+  "n_repeats": 50,
+  "output_dir": "05_analysis/results/expanded_tabular_stage1/subsampling",
+  "random_state": 20260602,
+  "repeat_path": "05_analysis/results/expanded_tabular_stage1/subsampling/sample_size_repeats.csv",
+  "sample_sizes": [
+    250,
+    500,
+    1000,
+    2000,
+    5000
+  ],
+  "score_names": [
+    "neg_loss",
+    "confidence",
+    "neg_entropy",
+    "modified_entropy"
+  ],
+  "skipped_path": "05_analysis/results/expanded_tabular_stage1/subsampling/sample_size_skipped.csv"
+}

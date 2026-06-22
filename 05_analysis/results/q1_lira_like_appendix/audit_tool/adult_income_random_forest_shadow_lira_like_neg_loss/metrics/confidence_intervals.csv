@@ -1,0 +1,6 @@
+dataset,model,attack_score,metric,point,ci_lower,ci_upper,ci_width,confidence,n_bootstrap,n_members,n_nonmembers
+adult_income,random_forest_shadow_lira_like_neg_loss,shadow_lira_like_neg_loss,AUC,0.6178463167233208,0.6131367679377231,0.6227893257631774,0.009652557825454267,0.95,1000,24421,24421
+adult_income,random_forest_shadow_lira_like_neg_loss,shadow_lira_like_neg_loss,TPR@1%FPR,0.011992459935206172,0.009968636924572841,0.01445777921215451,0.004489142287581668,0.95,1000,24421,24421
+adult_income,random_forest_shadow_lira_like_neg_loss,shadow_lira_like_neg_loss,membership_advantage@1%FPR,0.0019924599352061714,0.00014921035978043674,0.00429804568479525,0.004148835325014814,0.95,1000,24421,24421
+adult_income,random_forest_shadow_lira_like_neg_loss,shadow_lira_like_neg_loss,TPR@0.1%FPR,0.0012343640019729359,0.0010448771994976006,0.0014695994309284095,0.00042472223143080897,0.95,1000,24421,24421
+adult_income,random_forest_shadow_lira_like_neg_loss,shadow_lira_like_neg_loss,membership_advantage@0.1%FPR,0.00023436400197293585,3.367545765268871e-05,0.00047284675530279196,0.00043917129765010327,0.95,1000,24421,24421

@@ -1,0 +1,16 @@
+dataset,model,attack_score,metric,value,threshold,empirical_fpr,tie_fraction,n_members,n_nonmembers
+adult_income,random_forest_reference_centered,ref_centered_neg_loss,AUC,0.7510257761392187,,,,24421,24421
+adult_income,random_forest_reference_centered,ref_centered_neg_loss,TPR@1%FPR,0.08873510503255395,0.7740124464035034,0.01,0.2100000000000029,24421,24421
+adult_income,random_forest_reference_centered,ref_centered_neg_loss,membership_advantage@1%FPR,0.07873510503255396,0.7740124464035034,0.01,0.2100000000000029,24421,24421
+adult_income,random_forest_reference_centered,ref_centered_neg_loss,TPR@0.1%FPR,0.0038900945907211007,6.976269721984863,0.001,0.42100000000000204,24421,24421
+adult_income,random_forest_reference_centered,ref_centered_neg_loss,membership_advantage@0.1%FPR,0.0028900945907211007,6.976269721984863,0.001,0.42100000000000204,24421,24421
+adult_income,random_forest_reference_centered,ref_logit_margin,AUC,0.736452646385996,,,,24421,24421
+adult_income,random_forest_reference_centered,ref_logit_margin,TPR@1%FPR,0.03489373899512714,17.36485481262207,0.01,0.07000000000000098,24421,24421
+adult_income,random_forest_reference_centered,ref_logit_margin,membership_advantage@1%FPR,0.02489373899512714,17.36485481262207,0.01,0.07000000000000098,24421,24421
+adult_income,random_forest_reference_centered,ref_logit_margin,TPR@0.1%FPR,0.008025879366119324,24.09684944152832,0.001,0.42100000000000204,24421,24421
+adult_income,random_forest_reference_centered,ref_logit_margin,membership_advantage@0.1%FPR,0.007025879366119324,24.09684944152832,0.001,0.42100000000000204,24421,24421
+adult_income,random_forest_reference_centered,ref_z_logit_margin,AUC,0.7815903168871343,,,,24421,24421
+adult_income,random_forest_reference_centered,ref_z_logit_margin,TPR@1%FPR,0.1603947422300479,4.305747985839844,0.01,0.2100000000000029,24421,24421
+adult_income,random_forest_reference_centered,ref_z_logit_margin,membership_advantage@1%FPR,0.1503947422300479,4.305747985839844,0.01,0.2100000000000029,24421,24421
+adult_income,random_forest_reference_centered,ref_z_logit_margin,TPR@0.1%FPR,0.0030474182056426844,67.67546081542969,0.001,0.7105000000000005,24421,24421
+adult_income,random_forest_reference_centered,ref_z_logit_margin,membership_advantage@0.1%FPR,0.0020474182056426844,67.67546081542969,0.001,0.7105000000000005,24421,24421

@@ -1,0 +1,16 @@
+dataset,model,attack_score,metric,point,ci_lower,ci_upper,ci_width,confidence,n_bootstrap,n_members,n_nonmembers
+credit_default,random_forest_reference_centered,ref_centered_neg_loss,AUC,0.8656564733333334,0.8616374489444445,0.8695013048888888,0.007863855944444276,0.95,1000,15000,15000
+credit_default,random_forest_reference_centered,ref_centered_neg_loss,TPR@1%FPR,0.16593333333333332,0.15599333333333334,0.17893833333333334,0.022944999999999993,0.95,1000,15000,15000
+credit_default,random_forest_reference_centered,ref_centered_neg_loss,membership_advantage@1%FPR,0.1559333333333333,0.1465983333333333,0.1678,0.021201666666666702,0.95,1000,15000,15000
+credit_default,random_forest_reference_centered,ref_centered_neg_loss,TPR@0.1%FPR,0.0014666666666666667,0.0009333333333333333,0.06314999999999998,0.06221666666666665,0.95,1000,15000,15000
+credit_default,random_forest_reference_centered,ref_centered_neg_loss,membership_advantage@0.1%FPR,0.00046666666666666666,-6.833333333333185e-05,0.05904666666666662,0.05911499999999995,0.95,1000,15000,15000
+credit_default,random_forest_reference_centered,ref_logit_margin,AUC,0.9254414088888889,0.9220149897777777,0.928995229,0.00698023922222224,0.95,1000,15000,15000
+credit_default,random_forest_reference_centered,ref_logit_margin,TPR@1%FPR,0.3307333333333333,0.27726,0.40508,0.12782,0.95,1000,15000,15000
+credit_default,random_forest_reference_centered,ref_logit_margin,membership_advantage@1%FPR,0.3207333333333333,0.26386666666666664,0.39174,0.12787333333333334,0.95,1000,15000,15000
+credit_default,random_forest_reference_centered,ref_logit_margin,TPR@0.1%FPR,0.009133333333333334,0.006466666666666667,0.0128,0.006333333333333334,0.95,1000,15000,15000
+credit_default,random_forest_reference_centered,ref_logit_margin,membership_advantage@0.1%FPR,0.008133333333333333,0.005333333333333333,0.0116,0.006266666666666666,0.95,1000,15000,15000
+credit_default,random_forest_reference_centered,ref_z_logit_margin,AUC,0.9249534133333334,0.9219215203333333,0.9277894135,0.005867893166666693,0.95,1000,15000,15000
+credit_default,random_forest_reference_centered,ref_z_logit_margin,TPR@1%FPR,0.3738666666666667,0.32353,0.4070666666666667,0.0835366666666667,0.95,1000,15000,15000
+credit_default,random_forest_reference_centered,ref_z_logit_margin,membership_advantage@1%FPR,0.36386666666666667,0.31123833333333334,0.39667,0.08543166666666668,0.95,1000,15000,15000
+credit_default,random_forest_reference_centered,ref_z_logit_margin,TPR@0.1%FPR,0.016,0.004265000000000001,0.04740833333333332,0.043143333333333325,0.95,1000,15000,15000
+credit_default,random_forest_reference_centered,ref_z_logit_margin,membership_advantage@0.1%FPR,0.015,0.002933333333333333,0.047,0.04406666666666667,0.95,1000,15000,15000

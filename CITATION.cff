@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this reproducibility package, please cite the archived Zenodo record and the associated manuscript."
+title: "Finite-Sample Reliability of Low-FPR Membership Inference Audits: Reproducibility Package"
+version: "v1.0.0"
+date-released: "2026-06-05"
+doi: "10.5281/zenodo.20552369"
+authors:
+  - family-names: "Yi"
+    given-names: "Sicheng"
+type: software
+license: "MIT"
+abstract: "Code, score arrays, derived tables, figures, appendix checks, and documentation supporting the manuscript Finite-Sample Reliability of Low-FPR Membership Inference Audits."
+repository-artifact: "https://doi.org/10.5281/zenodo.20552369"

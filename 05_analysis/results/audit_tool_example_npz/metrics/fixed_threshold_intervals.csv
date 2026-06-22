@@ -1,0 +1,17 @@
+dataset,model,attack_score,target_fpr,threshold,empirical_fpr,tie_fraction,confidence,method,member_successes_effective,n_members,nonmember_false_positives_effective,n_nonmembers,metric,point,ci_lower,ci_upper,ci_width
+credit_default,random_forest,neg_loss,0.01,-0.0100503358989954,0.01,1.0,0.95,fixed_threshold_wilson,68.0,1000,10.0,1000,TPR@1%FPR,0.068,0.05399245780853015,0.08531386152298948,0.03132140371445932
+credit_default,random_forest,neg_loss,0.01,-0.0100503358989954,0.01,1.0,0.95,fixed_threshold_wilson,68.0,1000,10.0,1000,membership_advantage@1%FPR,0.058,0.04399245780853015,0.07531386152298948,0.03132140371445932
+credit_default,random_forest,neg_loss,0.001,0.0,0.001,0.5,0.95,fixed_threshold_wilson,3.0,1000,1.0,1000,TPR@0.1%FPR,0.003,0.001020783881138619,0.008783014053503171,0.007762230172364552
+credit_default,random_forest,neg_loss,0.001,0.0,0.001,0.5,0.95,fixed_threshold_wilson,3.0,1000,1.0,1000,membership_advantage@0.1%FPR,0.002,2.0783881138619013e-05,0.007783014053503171,0.007762230172364552
+credit_default,random_forest,confidence,0.01,0.9900000095367432,0.01,1.0,0.95,fixed_threshold_wilson,68.0,1000,10.0,1000,TPR@1%FPR,0.068,0.05399245780853015,0.08531386152298948,0.03132140371445932
+credit_default,random_forest,confidence,0.01,0.9900000095367432,0.01,1.0,0.95,fixed_threshold_wilson,68.0,1000,10.0,1000,membership_advantage@1%FPR,0.058,0.04399245780853015,0.07531386152298948,0.03132140371445932
+credit_default,random_forest,confidence,0.001,1.0,0.001,0.5,0.95,fixed_threshold_wilson,3.0,1000,1.0,1000,TPR@0.1%FPR,0.003,0.001020783881138619,0.008783014053503171,0.007762230172364552
+credit_default,random_forest,confidence,0.001,1.0,0.001,0.5,0.95,fixed_threshold_wilson,3.0,1000,1.0,1000,membership_advantage@0.1%FPR,0.002,2.0783881138619013e-05,0.007783014053503171,0.007762230172364552
+credit_default,random_forest,neg_entropy,0.01,-0.056001532822847366,0.01,1.0,0.95,fixed_threshold_wilson,68.0,1000,10.0,1000,TPR@1%FPR,0.068,0.05399245780853015,0.08531386152298948,0.03132140371445932
+credit_default,random_forest,neg_entropy,0.01,-0.056001532822847366,0.01,1.0,0.95,fixed_threshold_wilson,68.0,1000,10.0,1000,membership_advantage@1%FPR,0.058,0.04399245780853015,0.07531386152298948,0.03132140371445932
+credit_default,random_forest,neg_entropy,0.001,-2.7631020735330303e-11,0.001,0.5,0.95,fixed_threshold_wilson,3.0,1000,1.0,1000,TPR@0.1%FPR,0.003,0.001020783881138619,0.008783014053503171,0.007762230172364552
+credit_default,random_forest,neg_entropy,0.001,-2.7631020735330303e-11,0.001,0.5,0.95,fixed_threshold_wilson,3.0,1000,1.0,1000,membership_advantage@0.1%FPR,0.002,2.0783881138619013e-05,0.007783014053503171,0.007762230172364552
+credit_default,random_forest,modified_entropy,0.01,-0.00020100671099498868,0.01,1.0,0.95,fixed_threshold_wilson,68.0,1000,10.0,1000,TPR@1%FPR,0.068,0.05399245780853015,0.08531386152298948,0.03132140371445932
+credit_default,random_forest,modified_entropy,0.01,-0.00020100671099498868,0.01,1.0,0.95,fixed_threshold_wilson,68.0,1000,10.0,1000,membership_advantage@1%FPR,0.058,0.04399245780853015,0.07531386152298948,0.03132140371445932
+credit_default,random_forest,modified_entropy,0.001,-1.999933577551698e-24,0.001,0.5,0.95,fixed_threshold_wilson,3.0,1000,1.0,1000,TPR@0.1%FPR,0.003,0.001020783881138619,0.008783014053503171,0.007762230172364552
+credit_default,random_forest,modified_entropy,0.001,-1.999933577551698e-24,0.001,0.5,0.95,fixed_threshold_wilson,3.0,1000,1.0,1000,membership_advantage@0.1%FPR,0.002,2.0783881138619013e-05,0.007783014053503171,0.007762230172364552

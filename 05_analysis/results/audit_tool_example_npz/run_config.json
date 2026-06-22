@@ -1,0 +1,65 @@
+{
+  "confidence": 0.95,
+  "dataset": "credit_default",
+  "figures": [
+    "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/figures/low_fpr_roc.png",
+    "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/figures/score_distribution_neg_loss.png",
+    "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/figures/score_distribution_confidence.png",
+    "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/figures/score_distribution_neg_entropy.png",
+    "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/figures/score_distribution_modified_entropy.png",
+    "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/figures/tpr_at_fpr_vs_audit_size.png",
+    "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/figures/interval_width_vs_audit_size.png"
+  ],
+  "fpr_levels": [
+    0.01,
+    0.001
+  ],
+  "generated_at": "2026-06-03T11:06:35-04:00",
+  "input_format": "npz",
+  "input_metadata": {
+    "input_format": "npz",
+    "input_path": "/Users/jason/Desktop/MIA/05_analysis/examples/example_scores.npz",
+    "npz_keys": [
+      "member_neg_loss",
+      "nonmember_neg_loss",
+      "member_confidence",
+      "nonmember_confidence",
+      "member_neg_entropy",
+      "nonmember_neg_entropy",
+      "member_modified_entropy",
+      "nonmember_modified_entropy"
+    ]
+  },
+  "input_path": "/Users/jason/Desktop/MIA/05_analysis/examples/example_scores.npz",
+  "make_figures": true,
+  "membership_column": "membership",
+  "model": "random_forest",
+  "n_bootstrap": 25,
+  "n_members": 1000,
+  "n_nonmembers": 1000,
+  "n_repeats": 10,
+  "output_dir": "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz",
+  "outputs": {
+    "confidence_intervals": "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/metrics/confidence_intervals.csv",
+    "fixed_threshold_intervals": "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/metrics/fixed_threshold_intervals.csv",
+    "main_metrics": "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/metrics/main_metrics.csv",
+    "run_config": "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/run_config.json",
+    "run_summary": "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/run_summary.md",
+    "sample_size_repeats": "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/subsampling/sample_size_repeats.csv",
+    "sample_size_sensitivity": "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/subsampling/sample_size_sensitivity.csv",
+    "sample_size_skipped": "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/subsampling/sample_size_skipped.csv",
+    "tail_resolution_warnings": "/Users/jason/Desktop/MIA/05_analysis/results/audit_tool_example_npz/diagnostics/tail_resolution_warnings.csv"
+  },
+  "random_state": 20260603,
+  "sample_id_column": "sample_id",
+  "sample_sizes": [
+    250,
+    500
+  ],
+  "score_names": [
+    "neg_loss",
+    "confidence",
+    "neg_entropy",
+    "modified_entropy"
+  ]
+}
