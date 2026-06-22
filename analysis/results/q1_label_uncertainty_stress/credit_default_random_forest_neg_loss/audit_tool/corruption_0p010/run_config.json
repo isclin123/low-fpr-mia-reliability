@@ -1,0 +1,52 @@
+{
+  "confidence": 0.95,
+  "dataset": "credit_default",
+  "figures": [],
+  "fpr_levels": [
+    0.01,
+    0.001
+  ],
+  "generated_at": "2026-06-03T23:08:55-04:00",
+  "input_format": "npz",
+  "input_metadata": {
+    "input_format": "npz",
+    "input_path": "analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/score_arrays/neg_loss_label_corruption_0p010.npz",
+    "npz_keys": [
+      "member_neg_loss",
+      "nonmember_neg_loss"
+    ]
+  },
+  "input_path": "analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/score_arrays/neg_loss_label_corruption_0p010.npz",
+  "make_figures": false,
+  "membership_column": "membership",
+  "model": "random_forest_neg_loss_label_corruption_0p010",
+  "n_bootstrap": 1000,
+  "n_members": 15000,
+  "n_nonmembers": 15000,
+  "n_repeats": 200,
+  "output_dir": "analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/audit_tool/corruption_0p010",
+  "outputs": {
+    "confidence_intervals": "analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/audit_tool/corruption_0p010/metrics/confidence_intervals.csv",
+    "fixed_threshold_intervals": "analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/audit_tool/corruption_0p010/metrics/fixed_threshold_intervals.csv",
+    "main_metrics": "analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/audit_tool/corruption_0p010/metrics/main_metrics.csv",
+    "run_config": "analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/audit_tool/corruption_0p010/run_config.json",
+    "run_summary": "analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/audit_tool/corruption_0p010/run_summary.md",
+    "sample_size_repeats": "analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/audit_tool/corruption_0p010/subsampling/sample_size_repeats.csv",
+    "sample_size_sensitivity": "analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/audit_tool/corruption_0p010/subsampling/sample_size_sensitivity.csv",
+    "sample_size_skipped": "analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/audit_tool/corruption_0p010/subsampling/sample_size_skipped.csv",
+    "tail_resolution_warnings": "analysis/results/q1_label_uncertainty_stress/credit_default_random_forest_neg_loss/audit_tool/corruption_0p010/diagnostics/tail_resolution_warnings.csv"
+  },
+  "random_state": 20260602,
+  "sample_id_column": "sample_id",
+  "sample_sizes": [
+    250,
+    500,
+    1000,
+    2500,
+    5000,
+    10000
+  ],
+  "score_names": [
+    "neg_loss"
+  ]
+}

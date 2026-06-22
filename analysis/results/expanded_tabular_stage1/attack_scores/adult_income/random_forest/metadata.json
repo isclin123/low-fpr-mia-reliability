@@ -1,0 +1,19 @@
+{
+  "batch_size": 50000,
+  "dataset": "adult_income",
+  "generated_at": "2026-06-03T11:17:22-04:00",
+  "member_count": 24421,
+  "model": "random_forest",
+  "model_metadata_path": "analysis/results/expanded_tabular_stage1/models/adult_income/random_forest/metadata.json",
+  "model_subdir": "expanded_tabular_stage1/models",
+  "nonmember_count": 24421,
+  "random_state": 20260602,
+  "score_path": "analysis/results/expanded_tabular_stage1/attack_scores/adult_income/random_forest/attack_scores.npz",
+  "scores": {
+    "confidence": "Maximum predicted class probability; larger means more member-like.",
+    "modified_entropy": "Negative label-aware modified prediction entropy; larger means more member-like.",
+    "neg_entropy": "Negative prediction entropy; larger means sharper and more member-like.",
+    "neg_loss": "Negative per-sample cross-entropy loss; larger means more member-like."
+  },
+  "summary_path": "analysis/results/expanded_tabular_stage1/attack_scores/adult_income/random_forest/score_summary.csv"
+}

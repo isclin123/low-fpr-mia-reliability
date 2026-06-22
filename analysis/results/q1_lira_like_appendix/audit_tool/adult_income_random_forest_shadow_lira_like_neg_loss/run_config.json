@@ -1,0 +1,64 @@
+{
+  "confidence": 0.95,
+  "dataset": "adult_income",
+  "figures": [
+    "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss/figures/low_fpr_roc.png",
+    "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss/figures/score_distribution_shadow_lira_like_neg_loss.png",
+    "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss/figures/tpr_at_fpr_vs_audit_size.png",
+    "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss/figures/interval_width_vs_audit_size.png"
+  ],
+  "fpr_levels": [
+    0.01,
+    0.001
+  ],
+  "generated_at": "2026-06-05T01:11:49-04:00",
+  "input_format": "npz",
+  "input_metadata": {
+    "input_format": "npz",
+    "input_path": "analysis/results/q1_lira_like_appendix/score_arrays/adult_income_random_forest_shadow_lira_like_neg_loss.npz",
+    "npz_keys": [
+      "member_idx",
+      "nonmember_idx",
+      "member_neg_loss",
+      "nonmember_neg_loss",
+      "member_shadow_lira_like_neg_loss",
+      "nonmember_shadow_lira_like_neg_loss",
+      "shadow_member_neg_loss",
+      "shadow_nonmember_neg_loss"
+    ]
+  },
+  "input_path": "analysis/results/q1_lira_like_appendix/score_arrays/adult_income_random_forest_shadow_lira_like_neg_loss.npz",
+  "make_figures": true,
+  "membership_column": "membership",
+  "model": "random_forest_shadow_lira_like_neg_loss",
+  "n_bootstrap": 1000,
+  "n_members": 24421,
+  "n_nonmembers": 24421,
+  "n_repeats": 200,
+  "output_dir": "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss",
+  "outputs": {
+    "confidence_intervals": "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss/metrics/confidence_intervals.csv",
+    "fixed_threshold_intervals": "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss/metrics/fixed_threshold_intervals.csv",
+    "main_metrics": "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss/metrics/main_metrics.csv",
+    "run_config": "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss/run_config.json",
+    "run_summary": "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss/run_summary.md",
+    "sample_size_repeats": "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss/subsampling/sample_size_repeats.csv",
+    "sample_size_sensitivity": "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss/subsampling/sample_size_sensitivity.csv",
+    "sample_size_skipped": "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss/subsampling/sample_size_skipped.csv",
+    "tail_resolution_warnings": "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss/diagnostics/tail_resolution_warnings.csv"
+  },
+  "random_state": 20260602,
+  "sample_id_column": "sample_id",
+  "sample_sizes": [
+    500,
+    1000,
+    2500,
+    5000,
+    10000,
+    15000,
+    20000
+  ],
+  "score_names": [
+    "shadow_lira_like_neg_loss"
+  ]
+}

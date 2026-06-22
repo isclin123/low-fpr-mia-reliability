@@ -1,0 +1,57 @@
+{
+  "arrays_dir": "analysis/results/q1_lira_like_appendix/score_arrays",
+  "attack_score_subdir": "expanded_tabular_stage1/attack_scores",
+  "audit_dir": "analysis/results/q1_lira_like_appendix/audit_tool",
+  "base_score": "neg_loss",
+  "batch_size": 50000,
+  "confidence": 0.95,
+  "config_path": "analysis/results/q1_lira_like_appendix/run_config.json",
+  "dataset_outputs": [
+    {
+      "audit_output_dir": "analysis/results/q1_lira_like_appendix/audit_tool/credit_default_random_forest_shadow_lira_like_neg_loss",
+      "dataset": "credit_default",
+      "model": "random_forest",
+      "score_arrays": "analysis/results/q1_lira_like_appendix/score_arrays/credit_default_random_forest_shadow_lira_like_neg_loss.npz",
+      "score_arrays_csv": "analysis/results/q1_lira_like_appendix/score_arrays/credit_default_random_forest_shadow_lira_like_neg_loss.csv"
+    },
+    {
+      "audit_output_dir": "analysis/results/q1_lira_like_appendix/audit_tool/adult_income_random_forest_shadow_lira_like_neg_loss",
+      "dataset": "adult_income",
+      "model": "random_forest",
+      "score_arrays": "analysis/results/q1_lira_like_appendix/score_arrays/adult_income_random_forest_shadow_lira_like_neg_loss.npz",
+      "score_arrays_csv": "analysis/results/q1_lira_like_appendix/score_arrays/adult_income_random_forest_shadow_lira_like_neg_loss.csv"
+    }
+  ],
+  "datasets": [
+    "credit_default",
+    "adult_income"
+  ],
+  "fit_summary_path": "analysis/results/q1_lira_like_appendix/tables/shadow_fit_summary.csv",
+  "generated_at": "2026-06-05T01:11:49-04:00",
+  "key_metrics_path": "analysis/results/q1_lira_like_appendix/tables/key_metrics.csv",
+  "max_iter": 1000,
+  "model": "random_forest",
+  "n_bootstrap": 1000,
+  "n_estimators": 80,
+  "n_jobs": -1,
+  "n_repeats": 200,
+  "n_shadows": 8,
+  "not_full_lira_or_rmia": true,
+  "project_root": ".",
+  "purpose": "Bounded LiRA-like/shadow-model score-array compatibility case for Q1 appendix.",
+  "random_state": 20260602,
+  "sample_sizes": [
+    500,
+    1000,
+    2500,
+    5000,
+    10000,
+    15000,
+    20000
+  ],
+  "score_name": "shadow_lira_like_neg_loss",
+  "shadow_model_runs_path": "analysis/results/q1_lira_like_appendix/tables/shadow_model_runs.csv",
+  "skip_figures": false,
+  "summary_path": "analysis/results/q1_lira_like_appendix/README.md",
+  "tables_dir": "analysis/results/q1_lira_like_appendix/tables"
+}

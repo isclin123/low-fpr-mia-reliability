@@ -1,0 +1,98 @@
+{
+  "audit_sample_sizes": [
+    250,
+    500,
+    1000,
+    2000,
+    5000
+  ],
+  "attack_scores": [
+    "neg_loss",
+    "confidence",
+    "neg_entropy",
+    "modified_entropy"
+  ],
+  "bootstrap": {
+    "first_pass_repeats": 200,
+    "final_table_repeats": 1000
+  },
+  "ci_methods": [
+    "stratified_bootstrap",
+    "repeated_balanced_subsampling",
+    "fixed_threshold_wilson_or_binomial"
+  ],
+  "datasets": [
+    {
+      "key": "credit_default",
+      "status": "expanded_stage1_complete"
+    },
+    {
+      "key": "covertype",
+      "status": "expanded_stage1_complete"
+    },
+    {
+      "key": "adult_income",
+      "status": "expanded_stage1_complete"
+    },
+    {
+      "key": "bank_marketing",
+      "status": "expanded_stage1_complete"
+    },
+    {
+      "key": "diabetes_readmission",
+      "status": "expanded_stage1_complete"
+    }
+  ],
+  "fpr_levels": [
+    0.01,
+    0.001
+  ],
+  "models": [
+    {
+      "key": "logistic_regression",
+      "status": "expanded_stage1_complete"
+    },
+    {
+      "key": "random_forest",
+      "status": "expanded_stage1_complete"
+    },
+    {
+      "key": "hist_gradient_boosting",
+      "status": "expanded_stage1_complete"
+    },
+    {
+      "key": "extra_trees",
+      "status": "expanded_stage1_complete"
+    },
+    {
+      "key": "small_mlp",
+      "status": "expanded_stage1_complete"
+    }
+  ],
+  "latest_stage1_run": {
+    "bootstrap_repeats": 50,
+    "max_train_samples": null,
+    "output_dir": "analysis/results/expanded_tabular_stage1",
+    "run_name": "expanded_tabular_stage1",
+    "status": "complete",
+    "subsampling_repeats": 50,
+    "validity_report": "process_record/expanded_run_validity_report.md"
+  },
+  "latest_final_ci_hardening": {
+    "bootstrap_repeats": 1000,
+    "hardened_interval_rows": 111,
+    "metrics": [
+      "AUC",
+      "TPR@1%FPR",
+      "TPR@0.1%FPR"
+    ],
+    "output_dir": "analysis/results/final_ci_hardening",
+    "report": "process_record/final_ci_hardening_report.md",
+    "scope": "main-table candidate rows: best-AUC score plus canonical neg_loss per dataset/model",
+    "selected_score_rows": 37,
+    "status": "complete"
+  },
+  "name": "expanded_tabular_v1",
+  "random_state": 20260602,
+  "subsampling_repeats": 200
+}

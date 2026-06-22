@@ -1,0 +1,37 @@
+{
+  "baseline_score_path": "analysis/results/expanded_tabular_stage1/attack_scores/credit_default/random_forest/attack_scores.npz",
+  "comparison_metrics_path": "analysis/results/q1_stronger_score_appendix/credit_default_random_forest/comparison_metrics.csv",
+  "dataset": "credit_default",
+  "fallback_count": 556,
+  "fit_seconds_total": 5.171274124993943,
+  "generated_at": "2026-06-03T22:57:45-04:00",
+  "max_reference_holdout_count": 12,
+  "median_reference_holdout_count": 6.0,
+  "member_count": 15000,
+  "member_fallback_count": 279,
+  "min_holdout_references": 3,
+  "min_reference_holdout_count": 0,
+  "model": "random_forest",
+  "n_reference_models": 12,
+  "nonmember_count": 15000,
+  "nonmember_fallback_count": 277,
+  "purpose": "Q1 stronger-score compatibility appendix; not a LiRA/RMIA benchmark.",
+  "random_state": 20260602,
+  "reference_diagnostics_path": "analysis/results/q1_stronger_score_appendix/credit_default_random_forest/score_arrays/reference_model_diagnostics.csv",
+  "reference_n_estimators": 100,
+  "reference_train_fraction": 0.5,
+  "score_definitions": {
+    "ref_centered_neg_loss": "target log(true-class probability) minus out-of-reference mean log(true-class probability).",
+    "ref_logit_margin": "target true-class logit minus out-of-reference mean true-class logit.",
+    "ref_z_logit_margin": "ref_logit_margin divided by the out-of-reference true-class logit standard deviation."
+  },
+  "score_names": [
+    "ref_centered_neg_loss",
+    "ref_logit_margin",
+    "ref_z_logit_margin"
+  ],
+  "score_path": "analysis/results/q1_stronger_score_appendix/credit_default_random_forest/score_arrays/stronger_scores.npz",
+  "score_summary_path": "analysis/results/q1_stronger_score_appendix/credit_default_random_forest/score_arrays/score_summary.csv",
+  "target_indices_path": "analysis/results/expanded_tabular_stage1/models/credit_default/random_forest/training_indices.npz",
+  "target_model_path": "analysis/results/expanded_tabular_stage1/models/credit_default/random_forest/model.joblib"
+}

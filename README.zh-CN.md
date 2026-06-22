@@ -23,18 +23,18 @@
 
 包含内容：
 
-- `05_analysis/` 下的分析代码和可复用 score-array 审计工具；
+- `analysis/` 下的分析代码和可复用 score-array 审计工具；
 - 依赖文件、smoke examples、配置文件和复现命令；
-- `04_data_cleaned/` 下的清洗/划分数组和元数据；
+- `data_processed/` 下的清洗/划分数组和元数据；
 - expanded-grid score arrays、metrics、confidence intervals、subsampling 输出和样本量需求摘要，不包含训练模型缓存；
-- `06_figures_tables/` 下的最终主文表格、附录表格、扩展图、Q1 附录图、诊断图和图注；
+- `figures_tables/` 下的最终主文表格、附录表格、扩展图、Q1 附录图、诊断图和图注；
 - Q1 reference-centered score、bounded shadow-model score、tie-rule、split/seed、label-uncertainty、ExtraTrees sanity 和 final CI hardening 输出；
 - 用于追踪版本的最终论文 PDF/TeX。
 
 不包含内容：
 
 - 来自 UCI 或 scikit-learn 的原始第三方数据文件；
-- `05_analysis/results/*/models/` 下的大型训练模型缓存，这些文件可由文档中的命令重新生成；
+- `analysis/results/*/models/` 下的大型训练模型缓存，这些文件可由文档中的命令重新生成；
 - 临时构建文件、Python 缓存和本地临时文件；
 - 打包投稿 zip 文件。GitHub 镜像中省略这些文件，因为正式归档包已经发布在 Zenodo。
 
@@ -42,10 +42,10 @@
 
 建议从以下文件开始：
 
-- `09_final/reproducibility_package/README.md`
-- `09_final/reproducibility_package/environment.md`
-- `09_final/reproducibility_package/commands.md`
-- `09_final/reproducibility_package/data_and_outputs_manifest.md`
+- `release/reproducibility_package/README.md`
+- `release/reproducibility_package/environment.md`
+- `release/reproducibility_package/commands.md`
+- `release/reproducibility_package/data_and_outputs_manifest.md`
 
 主命令文件记录了 fast smoke path、expanded tabular run、final confidence-interval hardening、最终表格/图生成、reference-centered compatibility check、bounded shadow-model score-array check、tie-rule sensitivity check、split/seed sensitivity check 和 label-uncertainty check。
 

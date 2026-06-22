@@ -1,0 +1,56 @@
+{
+  "X_dtype": "float32",
+  "class_counts": {
+    "0": 23364,
+    "1": 6636
+  },
+  "cleaned_dataset_path": "data_processed/credit_default/cleaned_dataset.npz",
+  "description": "UCI Default of Credit Card Clients financial tabular dataset.",
+  "feature_names": [
+    "LIMIT_BAL",
+    "SEX",
+    "EDUCATION",
+    "MARRIAGE",
+    "AGE",
+    "PAY_0",
+    "PAY_2",
+    "PAY_3",
+    "PAY_4",
+    "PAY_5",
+    "PAY_6",
+    "BILL_AMT1",
+    "BILL_AMT2",
+    "BILL_AMT3",
+    "BILL_AMT4",
+    "BILL_AMT5",
+    "BILL_AMT6",
+    "PAY_AMT1",
+    "PAY_AMT2",
+    "PAY_AMT3",
+    "PAY_AMT4",
+    "PAY_AMT5",
+    "PAY_AMT6"
+  ],
+  "generated_at": "2026-06-02T14:26:15-04:00",
+  "member_class_counts": {
+    "0": 11682,
+    "1": 3318
+  },
+  "member_count": 15000,
+  "n_features": 23,
+  "n_rows": 30000,
+  "name": "credit_default",
+  "nonmember_class_counts": {
+    "0": 11682,
+    "1": 3318
+  },
+  "nonmember_count": 15000,
+  "random_state": 20260602,
+  "raw_path": "data_sources/credit_default/default of credit card clients.xls",
+  "split_path": "data_processed/credit_default/member_nonmember_split.npz",
+  "split_rule": "50/50 stratified split; member_idx is target train, nonmember_idx is held-out target test.",
+  "target_name": "default payment next month",
+  "task_type": "binary_classification",
+  "test_size": 0.5,
+  "y_dtype": "int64"
+}

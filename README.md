@@ -23,18 +23,18 @@ The archive supports the arXiv submission version of the manuscript. It is inten
 
 Included materials:
 
-- analysis code and reusable score-array audit tooling under `05_analysis/`;
+- analysis code and reusable score-array audit tooling under `analysis/`;
 - dependency files, smoke examples, configs, and reproduction commands;
-- cleaned/split arrays and metadata under `04_data_cleaned/`;
+- cleaned/split arrays and metadata under `data_processed/`;
 - main expanded-grid score arrays, metrics, confidence intervals, subsampling outputs, and sample-size requirement summaries, excluding trained model caches;
-- final main tables, appendix tables, expanded figures, Q1 appendix figures, diagnostics, and figure captions under `06_figures_tables/`;
+- final main tables, appendix tables, expanded figures, Q1 appendix figures, diagnostics, and figure captions under `figures_tables/`;
 - Q1 reference-centered score, bounded shadow-model score, tie-rule, split/seed, label-uncertainty, ExtraTrees sanity, and final CI hardening outputs;
 - final manuscript PDF/TeX for traceability.
 
 Excluded materials:
 
 - raw third-party dataset files from UCI or scikit-learn;
-- trained model cache files under `05_analysis/results/*/models/`, which are large and regenerable from documented commands;
+- trained model cache files under `analysis/results/*/models/`, which are large and regenerable from documented commands;
 - transient build files, Python caches, and local temporary files.
 - packaged submission zip files, which are omitted from this GitHub mirror because the archival release is already available on Zenodo.
 
@@ -42,10 +42,10 @@ Excluded materials:
 
 Start with:
 
-- `09_final/reproducibility_package/README.md`
-- `09_final/reproducibility_package/environment.md`
-- `09_final/reproducibility_package/commands.md`
-- `09_final/reproducibility_package/data_and_outputs_manifest.md`
+- `release/reproducibility_package/README.md`
+- `release/reproducibility_package/environment.md`
+- `release/reproducibility_package/commands.md`
+- `release/reproducibility_package/data_and_outputs_manifest.md`
 
 The main command file documents the fast smoke path, expanded tabular run, final confidence-interval hardening, final table/figure generation, reference-centered compatibility check, bounded shadow-model score-array check, tie-rule sensitivity check, split/seed sensitivity check, and label-uncertainty check.
 

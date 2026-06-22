@@ -1,0 +1,60 @@
+{
+  "confidence": 0.95,
+  "dataset": "credit_default",
+  "figures": [
+    "analysis/results/audit_tool_example_csv/figures/low_fpr_roc.png",
+    "analysis/results/audit_tool_example_csv/figures/score_distribution_neg_loss.png",
+    "analysis/results/audit_tool_example_csv/figures/score_distribution_confidence.png",
+    "analysis/results/audit_tool_example_csv/figures/score_distribution_neg_entropy.png",
+    "analysis/results/audit_tool_example_csv/figures/score_distribution_modified_entropy.png",
+    "analysis/results/audit_tool_example_csv/figures/tpr_at_fpr_vs_audit_size.png",
+    "analysis/results/audit_tool_example_csv/figures/interval_width_vs_audit_size.png"
+  ],
+  "fpr_levels": [
+    0.01,
+    0.001
+  ],
+  "generated_at": "2026-06-03T11:06:35-04:00",
+  "input_format": "csv",
+  "input_metadata": {
+    "dataset": "credit_default",
+    "input_format": "csv",
+    "input_path": "analysis/examples/example_scores.csv",
+    "membership_column": "membership",
+    "model": "random_forest",
+    "row_count": 2000,
+    "sample_id_column": "sample_id"
+  },
+  "input_path": "analysis/examples/example_scores.csv",
+  "make_figures": true,
+  "membership_column": "membership",
+  "model": "random_forest",
+  "n_bootstrap": 25,
+  "n_members": 1000,
+  "n_nonmembers": 1000,
+  "n_repeats": 10,
+  "output_dir": "analysis/results/audit_tool_example_csv",
+  "outputs": {
+    "confidence_intervals": "analysis/results/audit_tool_example_csv/metrics/confidence_intervals.csv",
+    "fixed_threshold_intervals": "analysis/results/audit_tool_example_csv/metrics/fixed_threshold_intervals.csv",
+    "main_metrics": "analysis/results/audit_tool_example_csv/metrics/main_metrics.csv",
+    "run_config": "analysis/results/audit_tool_example_csv/run_config.json",
+    "run_summary": "analysis/results/audit_tool_example_csv/run_summary.md",
+    "sample_size_repeats": "analysis/results/audit_tool_example_csv/subsampling/sample_size_repeats.csv",
+    "sample_size_sensitivity": "analysis/results/audit_tool_example_csv/subsampling/sample_size_sensitivity.csv",
+    "sample_size_skipped": "analysis/results/audit_tool_example_csv/subsampling/sample_size_skipped.csv",
+    "tail_resolution_warnings": "analysis/results/audit_tool_example_csv/diagnostics/tail_resolution_warnings.csv"
+  },
+  "random_state": 20260603,
+  "sample_id_column": "sample_id",
+  "sample_sizes": [
+    250,
+    500
+  ],
+  "score_names": [
+    "neg_loss",
+    "confidence",
+    "neg_entropy",
+    "modified_entropy"
+  ]
+}

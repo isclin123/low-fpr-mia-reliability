@@ -1,0 +1,41 @@
+{
+  "attack_score_subdir": "expanded_tabular_stage1/attack_scores",
+  "confidence": 0.95,
+  "confidence_intervals_path": "analysis/results/expanded_tabular_stage1/metrics/confidence_intervals.csv",
+  "datasets": [
+    "credit_default",
+    "covertype",
+    "adult_income",
+    "bank_marketing",
+    "diabetes_readmission"
+  ],
+  "fpr_levels": [
+    0.01,
+    0.001
+  ],
+  "generated_at": "2026-06-03T11:20:19-04:00",
+  "main_metrics_path": "analysis/results/expanded_tabular_stage1/metrics/main_metrics.csv",
+  "metrics": [
+    "AUC",
+    "TPR@1%FPR",
+    "TPR@0.1%FPR",
+    "membership_advantage@1%FPR",
+    "membership_advantage@0.1%FPR"
+  ],
+  "models": [
+    "logistic_regression",
+    "random_forest",
+    "hist_gradient_boosting",
+    "extra_trees",
+    "small_mlp"
+  ],
+  "n_bootstrap": 50,
+  "output_dir": "analysis/results/expanded_tabular_stage1/metrics",
+  "random_state": 20260602,
+  "score_names": [
+    "neg_loss",
+    "confidence",
+    "neg_entropy",
+    "modified_entropy"
+  ]
+}
